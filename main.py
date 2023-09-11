@@ -37,18 +37,18 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     return None
 
 # Returns True if successfully removed. False if not
-def RemoveAccount(uuid) -> bool:
-    print(f"Remoing account... ({uuid})")
+def RemoveAccount(uuidOrEmail) -> bool:
+    print(f"Remoing account... ({uuidOrEmail})")
 
     account = None
-    isEmail = '@' in uuid
+    isEmail = '@' in uuidOrEmail
     if isEmail:
-        account = next((x for x in Accounts if x.email == uuid), None)
+        account = next((x for x in Accounts if x.email == uuidOrEmail), None)
     else:
-        account = next((x for x in Accounts if x.uuid == uuid), None)
+        account = next((x for x in Accounts if x.uuid == uuidOrEmail), None)
 
     if account is None:
-        print("Cannot find user with this uuid!")
+        print("Cannot find user with this uuid or email!")
         return False
     
     Accounts.remove(account)
