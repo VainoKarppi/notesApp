@@ -23,7 +23,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     isEmail = '@' in usernameOrEmail
     fetchedAccounts = []
     if isEmail:
-        fetchedAccounts = [x for x in Accounts if x.email == usernameOrEmail]
+        fetchedAccounts = [x for x in Accounts if x.email.lower() == usernameOrEmail.lower()]
     else:
         fetchedAccounts = [x for x in Accounts if x.name == usernameOrEmail]
     for account in fetchedAccounts:
@@ -43,7 +43,7 @@ def RemoveAccount(uuidOrEmail) -> bool:
     account = None
     isEmail = '@' in uuidOrEmail
     if isEmail:
-        account = next((x for x in Accounts if x.email == uuidOrEmail), None)
+        account = next((x for x in Accounts if x.email.lower() == uuidOrEmail.lower()), None)
     else:
         account = next((x for x in Accounts if x.uuid == uuidOrEmail), None)
 
@@ -68,7 +68,7 @@ def AddAccount(name, password, email) -> Account:
         print("Invalid Email!")
         return None
 
-    emailInUse = next((x for x in Accounts if x.email == email), None) != None
+    emailInUse = next((x for x in Accounts if x.email.lower() == email.lower()), None) != None
     if (emailInUse):
         print("Email already in use!")
         return None
@@ -162,7 +162,7 @@ class Note:
 def AddNote(user: Account, subject: str, text: str) -> bool:
     print(f"Creating new note for user: [({user.name}) - ({user.uuid})] with subject: ({subject})")
 
-    subjectInUse = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject == subject))), None)
+    subjectInUse = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
     if (subjectInUse):
         print("Subject name already in use!")
         return False
@@ -186,7 +186,7 @@ def UpdateNotes() -> None:
 
 
 def RemoveNote(user: Account, subject: str) -> bool:
-    noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject == subject))), None)
+    noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
     if (noteToDelete is None):
         print("No note found with this subject to be deleted!")
         return False
