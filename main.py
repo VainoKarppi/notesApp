@@ -250,7 +250,7 @@ def CommandsHelp():
         print(f"\nHelp - (Show this help page)")
         print(f"Notes - (Enter Notes Mode)")
         print(f"Login - (Login to account)")
-        print(f"Logout - (Login to account)")
+        print(f"Logout - (Logout from the current account)")
         print(f"AddAccount - (Create Account)")
         print(f"RemoveAccount - (Remove Account)")
         print(f"ViewAccount - (Shows current account info)")
@@ -261,9 +261,9 @@ def CommandsHelp():
         print(f"AddNote - (Create new note)")
         print(f"RemoveNote - (Removes a note)")
         print(f"EditNote - (Edit Existing Note)")
-        print(f"ShowNotes - (View Existing Note)")
-        print(f"ReadNote - (View Existing Note)")
-        print(f"SearchNote - (View Existing Note)")
+        print(f"ShowNotes - (Show All Available Notes)")
+        print(f"ReadNote - (View a Specific Note)")
+        print(f"SearchNote - (Search for a Note)")
         print(f"Exit - (Return to Account Mode)")
 
 
@@ -280,6 +280,7 @@ if __name__=='__main__':
     print("Type 'help' to view commands!")
     loggedUser = None
     while 1==1:
+        #* ACCOUNT MODE
         if UiMode == 1:
             command = input("\n[*ACCOUNT MODE*] > Enter command:\n> ").lower()
 
@@ -332,7 +333,7 @@ if __name__=='__main__':
 
             if (command == "exit"): break
 
-        #! NOTE EDIT MODE
+        #* NOTE EDIT MODE
         elif UiMode == 2:
             command = input("\n[*NOTES MODE*] > Enter command:\n> ").lower()
 
@@ -346,6 +347,8 @@ if __name__=='__main__':
                 
             if (command == "shownotes"):
                 thisUsersNotes = [x for x in Notes if x.ownerUUID == loggedUser.uuid]
+                if (len(thisUsersNotes) == 0): print("No notes found for current user!")
+                
                 index = 0
                 for note in thisUsersNotes:
                     index = index + 1
@@ -407,6 +410,7 @@ if __name__=='__main__':
                 import os; os.system('cls' if os.name == 'nt' else 'clear')
                 UiMode = 1
 
+    #! DEBUG COMMANDS
     #Reset accounts!
     #RemoveAccounts()
 
