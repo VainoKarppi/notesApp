@@ -44,6 +44,15 @@ def AddAccount(name, password):
 
     return account
 
+def RemoveAccounts():
+    import json
+    import os
+    if os.stat("accounts.json").st_size == 0: return
+
+    global Accounts
+    open('accounts.json', 'w').close()
+    Accounts = []
+
 def RestoreAccounts():
     print("Restoring accounts...")
     import json
