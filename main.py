@@ -298,8 +298,8 @@ if __name__=='__main__':
             if (command == "login"):
                 if (loggedUser is not None): print("Already logged in!"); continue
 
-                username = input("Enter username or email:\n")
-                password = input("Enter password:\n")
+                username = input("Enter username or email:\n> ")
+                password = input("Enter password:\n> ")
                 loggedUser = Login(username,password)
             
             if (command == "logout"):
@@ -308,13 +308,13 @@ if __name__=='__main__':
                 print(f"User [{loggedUser.name}- ({loggedUser.uuid})] Logged Out!")
 
             if (command == "addaccount"): 
-                username = input("Enter username:\n")
-                password = input("Enter password:\n")
-                email = input("Enter email:\n")
+                username = input("Enter username:\n> ")
+                password = input("Enter password:\n> ")
+                email = input("Enter email:\n> ")
                 AddAccount(username,password,email)
 
             if (command == "removeaccount"):
-                uuid = input("Enter user email or uuid\n")
+                uuid = input("Enter user email or uuid\n> ")
                 RemoveAccount(uuid)
 
             if (command == "viewaccount"):
@@ -353,24 +353,24 @@ if __name__=='__main__':
                     print(note)
 
             if (command == "addnote"):
-                subject = input("Enter subject name:\n")
-                text = input("Enter text:\n")
+                subject = input("Enter subject name:\n> ")
+                text = input("Enter text:\n> ")
                 AddNote(loggedUser,subject,text)
 
             if (command == "removenote"):
-                subject = input("Enter subject name of the note you want to delete:\n")
+                subject = input("Enter subject name of the note you want to delete:\n> ")
                 RemoveNote(loggedUser,subject)
 
             if (command == "editnote"):
-                subject = input("Enter subject name to edit:\n")
+                subject = input("Enter subject name to edit:\n> ")
                 # Uses memory address reference for the list item
                 note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
                 if (note is None): print("No note was found with this subject name!"); continue
-                note.text = input("Enter new text for the note\n")
+                note.text = input("Enter new text for the note\n> ")
                 UpdateNotes()
 
             if (command == "readnote"):
-                subject = input("Enter subject name to read:\n")
+                subject = input("Enter subject name to read:\n> ")
                 note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
                 if (note is None): print("No note was found with this subject name!"); continue
                 print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
