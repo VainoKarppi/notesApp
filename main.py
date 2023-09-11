@@ -83,3 +83,26 @@ def ComputeMD5hash(password,salt):
 def IsMD5hash(string: str) -> bool:
     import re
     return bool(re.match(r"^[a-fA-F0-9]{32}$", string))
+
+if __name__=='__main__':
+    print("INIT...")
+
+    #Reset accounts!
+    #RemoveAccounts()
+    
+    RestoreAccounts()
+
+    #Add Account:
+    #AddAccount("admin","admin")
+
+    index = 0
+    for a in Accounts:
+        index = index + 1
+        print(f"ACCOUNT {index}")
+        print(f"\t uuid: {a.uuid}")
+        print(f"\t name: {a.name}")
+        print(f"\t password: {a.password}")
+        print(f"\t salt: {a.salt}\n")
+    del index
+
+    print("\nEND\n")
