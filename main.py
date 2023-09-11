@@ -362,7 +362,10 @@ if __name__=='__main__':
                 print("TODO edit note")
 
             if (command == "readnote"):
-                print("TODO read note")
+                subject = input("Enter subject name to read:\n")
+                note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
+                if (note is None): print("No note was found with this subject!"); continue
+                print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
 
             if (command == "exit"):
                 import os; os.system('cls' if os.name == 'nt' else 'clear')
