@@ -76,19 +76,16 @@ def AddAccount(name, password, email) -> Account:
     account = Account(name,password,email)
     Accounts.append(account)
     
-    UpdateAccounts()
+    UpdateAccounts(True)
 
     return account
 
-def UpdateAccounts() -> None:
+def UpdateAccounts(append: bool = False) -> None:
     import json
     jsonData = json.dumps([item.__dict__ for item in Accounts])
 
-    # Overwrite ALL instead of add single
-    with open('accounts.json', 'r+') as outfile:
-        outfile.write(jsonData)
-        outfile.close()
-
+    mode = 'r+' if append else 'w'
+    with open('accounts.json', mode) as outfile: outfile.write(jsonData)
 
 def RemoveAccounts() -> None:
     print("Clearing all saved accounts...")
@@ -96,7 +93,6 @@ def RemoveAccounts() -> None:
     import os
     if os.stat("accounts.json").st_size == 0: return
 
-    
     open('accounts.json', 'w').close()
     global Accounts
     Accounts = []
@@ -109,8 +105,7 @@ def RestoreAccounts() -> None:
     import os
 
     if os.stat("accounts.json").st_size == 0: return
-    with open('accounts.json', 'r') as data:
-        accounts = json.load(data)
+    with open('accounts.json', 'r') as data: accounts = json.load(data)
 
     global Accounts
     for account in accounts:
@@ -173,19 +168,17 @@ def AddNote(user: Account, subject: str, text: str) -> bool:
     newNote = Note(user.uuid,subject,text)
     Notes.append(newNote)
 
-    UpdateNotes()
+    UpdateNotes(True)
     return True
 
 
-def UpdateNotes() -> None:
+def UpdateNotes(append: bool = False) -> None:
     import json
 
     jsonData = json.dumps([item.__dict__ for item in Notes])
 
-    # Overwrite ALL instead of add single
-    with open('notes.json', 'r+') as outfile:
-        outfile.write(jsonData)
-        outfile.close()
+    mode = 'r+' if append else 'w'
+    with open('notes.json', mode) as outfile: outfile.write(jsonData)
 
 
 def RemoveNote(user: Account, subject: str) -> bool:
@@ -219,8 +212,7 @@ def RestoreNotes() -> None:
     import os
 
     if os.stat("notes.json").st_size == 0: return
-    with open('notes.json', 'r') as data:
-        notes = json.load(data)
+    with open('notes.json', 'r') as data: notes = json.load(data)
 
     global Notes
     for note in notes:
