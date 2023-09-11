@@ -1,3 +1,5 @@
+
+
 Accounts = []
 class Account:
     def __init__(self, name, password, uuid = None, salt = None):
@@ -9,6 +11,11 @@ class Account:
         self.password = password if IsMD5hash(password) else str(ComputeMD5hash(password,self.salt))
         
 
+
+
+def Login():
+    username = input("Enter username:\n")
+    password = input("Enter password:\n")
 
 
 def RemoveAccount(uuid):
