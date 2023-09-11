@@ -1,4 +1,4 @@
-
+import datetime
 
 #! ----------------------
 #! ACCOUNTS METHODS
@@ -149,7 +149,6 @@ def IsMD5hash(password: str) -> bool:
 Notes = []
 class Note:
     def __init__(self, ownerUUID: str, subject: str, text: str):
-        import datetime
         self.ownerUUID = ownerUUID
         self.subject = subject
         self.text = text
@@ -227,8 +226,10 @@ def RestoreNotes() -> None:
 
 
 
-
-
+# can be parsed from datetime.datetime.utcnow()
+def ParseStringToDate(dateString: str) -> datetime:
+    date = datetime.datetime.strptime(dateString, "%Y-%m-%d %H:%M:%S.%f")
+    return date
 
 
 
@@ -262,6 +263,7 @@ def CommandsHelp():
         print(f"EditNote - (Edit Existing Note)")
         print(f"ShowNotes - (View Existing Note)")
         print(f"ReadNote - (View Existing Note)")
+        print(f"SearchNote - (View Existing Note)")
         print(f"Exit - (Return to Account Mode)")
 
 
@@ -271,7 +273,7 @@ if __name__=='__main__':
     print("STARTING PROGRAM...\n")
     RestoreAccounts()
     RestoreNotes()
-    
+
     if (len(Accounts) == 0):
         AddAccount("admin","admin","test@gmail.com")
 
@@ -372,6 +374,34 @@ if __name__=='__main__':
                 note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
                 if (note is None): print("No note was found with this subject name!"); continue
                 print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
+
+            if (command == "searchnote"):
+                mode = input("Enter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
+                if (mode == "1"):
+                    subjectFilter = input("\nEnter subject filter:\n> ")
+                    notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and subjectFilter.lower() in x.subject.lower())]
+                    print(f"Found {len(notes)} note(s) with this subject filter!")
+                    for note in notes: print(note)
+
+                #TODO add hours and minutes support
+                elif (mode == "2"):
+                    startDateText = input("\nEnter start date for filter (dd/mm/yyyy):\n> ")
+                    startDate = datetime.datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
+
+                    endDateText = input("\nEnter end date for filter (dd/mm/yyyy) - (leave empty for today):\n> ")
+                    endDate = datetime.datetime.utcnow()
+                    if (len(endDateText) != 0):
+                        endDate = datetime.datetime(int(endDateText.split('/')[2]), int(endDateText.split('/')[1]), int(endDateText.split('/')[0]))
+                        
+                    notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and (startDate < ParseStringToDate(x.creationTimeUTC) < endDate))]
+                    print(f"Found {len(notes)} note(s) with these date filters!")
+                    for note in notes: print(note)
+                    
+                elif (mode == "3"):
+                    textFilter = input("\nEnter text filter:\n> ")
+                    notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and textFilter.lower() in x.text.lower())]
+                    print(f"Found {len(notes)} note(s) with this subject filter!")
+                    for note in notes: print(note)
 
             if (command == "exit"):
                 import os; os.system('cls' if os.name == 'nt' else 'clear')
