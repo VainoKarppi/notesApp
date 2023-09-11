@@ -87,12 +87,12 @@ def AddAccount(name, password, email):
 
 
 def RemoveAccounts():
-    import json
     import os
     if os.stat("accounts.json").st_size == 0: return
 
-    global Accounts
+    
     open('accounts.json', 'w').close()
+    global Accounts
     Accounts = []
 
 def RestoreAccounts():
@@ -123,9 +123,21 @@ def IsMD5hash(password: str) -> bool:
     import re
     return bool(re.match(r"^[a-fA-F0-9]{32}$", password))
 
+
+
+
+
+
+
+
+
+#! --------------------
+#! USER INTERFACE
+#! --------------------
 def CommandsHelp():
     print(f"\nHelp - (Show this help page)")
     print(f"Login - (Login to account)")
+    print(f"Logout - (Login to account)")
     print(f"AddAccount - (Create Account)")
     print(f"RemoveAccount - (Remove Account)")
     print(f"ViewAccount - (Shows account info)")
@@ -145,6 +157,10 @@ if __name__=='__main__':
         command = input("\nEnter command:\n").lower()
         if (command == "help"): CommandsHelp()
         if (command == "login"): loggedUser = Login()
+        if (command == "logout"):
+            loggedUser = None
+            print(f"User [{loggedUser.name}- ({loggedUser.uuid})] Logged Out!")
+
         if (command == "addaccount"): 
             username = input("Enter username:\n")
             password = input("Enter password:\n")
@@ -169,12 +185,5 @@ if __name__=='__main__':
 
     #Reset accounts!
     #RemoveAccounts()
-    
-    
-
-    #Add Account:
-    #AddAccount("admin","admin")
-
-    
 
     print("\nEND\n")
