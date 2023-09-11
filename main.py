@@ -165,6 +165,12 @@ def AddNote(user: Account, subject: str, text: str):
     newNote = Note(user.uuid,subject,text)
     Notes.append(newNote)
 
+    UpdateNotes()
+
+
+def UpdateNotes():
+    import json
+
     jsonData = json.dumps([item.__dict__ for item in Notes])
 
     # Overwrite ALL instead of add single
