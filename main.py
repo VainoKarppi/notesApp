@@ -9,7 +9,9 @@ class Account:
         self.name = name
         self.salt = str(randint(1000000,9999999)) if salt is None else salt
         self.password = password if IsMD5hash(password) else str(ComputeMD5hash(password,self.salt))
-        
+    
+    def __str__(self):
+        return(f"\t uuid: {self.uuid}\n\t name: {self.name}\n\t password: {self.password}\n\t salt: {self.salt}\n")
 
 
 
@@ -77,22 +79,19 @@ def RestoreAccounts():
     print(f"Restored {len(Accounts)} account(s)...\n")
 
 def ComputeMD5hash(password,salt):
-    import hashlib
     from hashlib import md5
-    m = hashlib.md5()
-    saltedPassword = password + salt
-    m.update(saltedPassword.encode('utf-8'))
-    md5string = m.digest()
-    return md5string
+    m = md5()
+    m.update((password + salt).encode('utf-8'))
+    return m.digest()
 
 
 
-def IsMD5hash(string: str) -> bool:
+def IsMD5hash(password: str) -> bool:
     import re
-    return bool(re.match(r"^[a-fA-F0-9]{32}$", string))
+    return bool(re.match(r"^[a-fA-F0-9]{32}$", password))
 
 if __name__=='__main__':
-    print("INIT...")
+    print("STARTING PROGRAM...\n")
 
     #Reset accounts!
     #RemoveAccounts()
@@ -103,13 +102,10 @@ if __name__=='__main__':
     #AddAccount("admin","admin")
 
     index = 0
-    for a in Accounts:
+    for account in Accounts:
         index = index + 1
         print(f"ACCOUNT {index}")
-        print(f"\t uuid: {a.uuid}")
-        print(f"\t name: {a.name}")
-        print(f"\t password: {a.password}")
-        print(f"\t salt: {a.salt}\n")
+        print(account)
     del index
 
     print("\nEND\n")
