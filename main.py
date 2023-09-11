@@ -267,6 +267,7 @@ def CommandsHelp():
 
 
 if __name__=='__main__':
+    import os; os.system('cls' if os.name == 'nt' else 'clear')
     print("STARTING PROGRAM...\n")
     RestoreAccounts()
     RestoreNotes()
@@ -382,4 +383,4 @@ if __name__=='__main__':
     #Reset notes!
     #RemoveNotes()
 
-    print("\BYE! 👋\n")
+    print("\nBYE! 👋\n")
