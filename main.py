@@ -56,12 +56,8 @@ def RemoveAccount(uuid):
         return False
     
     Accounts.remove(account)
-    jsonData = json.dumps([item.__dict__ for item in Accounts])
+    UpdateAccounts()
 
-    # Overwrite ALL instead of add single
-    with open('accounts.json', 'r+') as outfile:
-        outfile.write(jsonData)
-        outfile.close()
     return True
 
 
@@ -86,14 +82,17 @@ def AddAccount(name, password, email):
     account = Account(name,password,email)
     Accounts.append(account)
     
+    UpdateAccounts()
+
+    return account
+
+def UpdateAccounts():
     jsonData = json.dumps([item.__dict__ for item in Accounts])
 
     # Overwrite ALL instead of add single
     with open('accounts.json', 'r+') as outfile:
         outfile.write(jsonData)
         outfile.close()
-
-    return account
 
 
 def RemoveAccounts():
