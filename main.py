@@ -178,7 +178,19 @@ def UpdateNotes():
         outfile.write(jsonData)
         outfile.close()
 
-def RestoreNotes():
+
+def RemoveNote(user: Account, subject: str) -> bool:
+    noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject == subject))), None)
+    if (noteToDelete is None):
+        print("No note found with this subject to be deleted!")
+        return False
+
+    Notes.remove(noteToDelete)
+    UpdateNotes()
+
+    return True
+
+
     print("Restoring notes...")
     import json
     import os
@@ -299,7 +311,8 @@ if __name__=='__main__':
                 AddNote(loggedUser,subject,text)
 
             if (command == "removenote"):
-                print("TODO remove note")
+                subject = input("Enter subject name of the note you want to delete:\n")
+                RemoveNote(loggedUser,subject)
 
             if (command == "editnote"):
                 print("TODO edit note")
