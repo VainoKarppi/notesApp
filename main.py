@@ -28,6 +28,22 @@ def RemoveAccount(uuid):
         outfile.write(jsonData)
         outfile.close()
 
+def AddAccount(name, password):
+    import json
+
+    print(f"Creating account... ({name})\n")
+    account = Account(name,password)
+    Accounts.append(account)
+    
+    jsonData = json.dumps([item.__dict__ for item in Accounts])
+
+    # Overwrite ALL instead of add single
+    with open('accounts.json', 'r+') as outfile:
+        outfile.write(jsonData)
+        outfile.close()
+
+    return account
+
 def RestoreAccounts():
     print("Restoring accounts...")
     import json
