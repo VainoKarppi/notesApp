@@ -10,6 +10,24 @@ class Account:
         
 
 
+
+def RemoveAccount(uuid):
+    import json
+    print(f"Remoing account... ({uuid})")
+
+    account = [x for x in Accounts if x.uuid == uuid]
+    if account is None:
+        print("Cannot find such user!")
+        return
+    
+    Accounts.remove(account)
+    jsonData = json.dumps([item.__dict__ for item in Accounts])
+
+    # Overwrite ALL instead of add single
+    with open('accounts.json', 'r+') as outfile:
+        outfile.write(jsonData)
+        outfile.close()
+
 def RestoreAccounts():
     print("Restoring accounts...")
     import json
