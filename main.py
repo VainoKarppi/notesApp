@@ -8,7 +8,7 @@ class Account:
         self.uuid = str(uuid4()) if uuid is None else uuid
         self.name = name
         self.salt = str(randint(1000000,9999999)) if salt is None else salt
-        self.password = password if IsMD5hash(password) else str(ComputeMD5hash(password,self.salt))
+        self.password = password if IsMD5hash(password) else ComputeMD5hash(password,self.salt)
     
     def __str__(self):
         return(f"\t uuid: {self.uuid}\n\t name: {self.name}\n\t password: {self.password}\n\t salt: {self.salt}\n")
@@ -19,17 +19,26 @@ def Login():
     username = input("Enter username:\n")
     password = input("Enter password:\n")
 
+    fetchedAccounts = [x for x in Accounts if x.name == username]
+    for account in fetchedAccounts:
+        hashedPassword = ComputeMD5hash(password,account.salt)
+        if hashedPassword == account.password:
+            print(f"Account: ({account.name}) | ({account.uuid}) Logged in!")   
+            return account
+        
+    print(f"Invalid username or password! ({username})")
+    return None
 
 def RemoveAccount(uuid):
     import json
     print(f"Remoing account... ({uuid})")
 
     account = [x for x in Accounts if x.uuid == uuid]
-    if account is None:
-        print("Cannot find such user!")
+    if account is []:
+        print("Cannot find user with this uuid!")
         return
     
-    Accounts.remove(account)
+    Accounts.remove(account[0])
     jsonData = json.dumps([item.__dict__ for item in Accounts])
 
     # Overwrite ALL instead of add single
@@ -82,7 +91,7 @@ def ComputeMD5hash(password,salt):
     from hashlib import md5
     m = md5()
     m.update((password + salt).encode('utf-8'))
-    return m.digest()
+    return str(m.digest())
 
 
 
