@@ -12,7 +12,7 @@ class Account:
         self.password = password if IsMD5hash(password) else ComputeMD5hash(password,self.salt)
     
     def __str__(self):
-        return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\t email: {self.email}\n\tsalt: {self.salt}\n")
+        return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n")
 
 
 
@@ -122,8 +122,9 @@ def CommandsHelp():
     print(f"Login - (Login to account)")
     print(f"AddAccount - (Create Account)")
     print(f"RemoveAccount - (Remove Account)")
-    print(f"ShowAccount - (Shows account info)")
-    print(f"ShowAccounts - (Show All Accounts)\n")
+    print(f"ViewAccount - (Shows account info)")
+    print(f"ShowAccounts - (Show All Accounts)")
+    print(f"Exit - (Closes Program)\n")
 
 
 
@@ -131,15 +132,25 @@ if __name__=='__main__':
     print("STARTING PROGRAM...\n")
     RestoreAccounts()
     CommandsHelp()
-    AddAccount("admin","admin")
+    AddAccount("admin","admin","test@gmail.com")
 
     loggedUser = None
     while 1==1:
         command = input("\nEnter command:\n").lower()
         if (command == "help"): CommandsHelp()
         if (command == "login"): loggedUser = Login()
-        if (command == "addaccount"): AddAccount()
+        if (command == "addaccount"): 
+            username = input("Enter username:\n")
+            password = input("Enter password:\n")
+            email = input("Enter email:\n")
+            AddAccount(username,password,email)
         if (command == "removeaccount"): RemoveAccount()
+
+        if (command == "viewaccount"):
+            if (loggedUser is None):
+                print("Not logged in!")
+            else:
+                print(loggedUser)
 
         if (command == "showaccounts"):
             index = 0
@@ -147,7 +158,8 @@ if __name__=='__main__':
                 index = index + 1
                 print(f"ACCOUNT: ({index})")
                 print(account)
-    
+
+        if (command == "exit"): break
 
     #Reset accounts!
     #RemoveAccounts()
