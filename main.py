@@ -156,7 +156,7 @@ class Note:
         self.creationTimeUTC = str(datetime.datetime.utcnow())
 
     def __str__(self):
-        return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n")
+        return(f"\townerUUID: {self.ownerUUID}\n\tsubject: {self.subject}\n\ttext: {self.text}\n\tcreationTimeUTC: {self.creationTimeUTC}\n")
 
 
 def AddNote(user: Account, subject: str, text: str) -> bool:
@@ -245,6 +245,7 @@ def CommandsHelp():
         print(f"AddNote - (Create new note)")
         print(f"RemoveNote - (Removes a note)")
         print(f"EditNote - (Edit Existing Note)")
+        print(f"ShowNotes - (View Existing Note)")
         print(f"ReadNote - (View Existing Note)")
         print(f"Exit - (Return to Account Mode)")
 
@@ -293,6 +294,7 @@ if __name__=='__main__':
                 password = input("Enter password:\n")
                 email = input("Enter email:\n")
                 AddAccount(username,password,email)
+
             if (command == "removeaccount"):
                 uuid = input("Enter user email or uuid\n")
                 RemoveAccount(uuid)
@@ -323,6 +325,14 @@ if __name__=='__main__':
                 continue
 
             if (command == "help"): CommandsHelp()
+                
+            if (command == "shownotes"):
+                thisUsersNotes = [x for x in Notes if x.ownerUUID == loggedUser.uuid]
+                index = 0
+                for note in thisUsersNotes:
+                    index = index + 1
+                    print(f"NOTE: ({index})")
+                    print(note)
 
             if (command == "addnote"):
                 subject = input("Enter subject name:\n")
