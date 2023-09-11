@@ -27,7 +27,7 @@ def Login():
     else:
         fetchedAccounts = [x for x in Accounts if x.name == username]
     for account in fetchedAccounts:
-        #TODO what if there is a username and same password is use for two accounts?? (Ask for email)
+        #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
         hashedPassword = ComputeMD5hash(password,account.salt)
         if hashedPassword == account.password:
             print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
@@ -140,58 +140,83 @@ def IsMD5hash(password: str) -> bool:
 #! --------------------
 #! USER INTERFACE
 #! --------------------
+UiMode = 1
 def CommandsHelp():
-    print(f"\nHelp - (Show this help page)")
-    print(f"Login - (Login to account)")
-    print(f"Logout - (Login to account)")
-    print(f"AddAccount - (Create Account)")
-    print(f"RemoveAccount - (Remove Account)")
-    print(f"ViewAccount - (Shows account info)")
-    print(f"ShowAccounts - (Show All Accounts)")
-    print(f"Exit - (Closes Program)\n")
+    if UiMode == 1:
+        print(f"\nHelp - (Show this help page)")
+        print(f"Notes - (Enter Notes Mode)")
+        print(f"Login - (Login to account)")
+        print(f"Logout - (Login to account)")
+        print(f"AddAccount - (Create Account)")
+        print(f"RemoveAccount - (Remove Account)")
+        print(f"ViewAccount - (Shows account info)")
+        print(f"ShowAccounts - (Show All Accounts)")
+        print(f"Exit - (Closes Program)\n")
+    elif UiMode == 2:
+        print(f"\nHelp - (Show this help page)")
+        print(f"AddNote - (Create new note)")
+        print(f"Exit - (Return to Account Mode)")
 
 
 
 if __name__=='__main__':
     print("STARTING PROGRAM...\n")
     RestoreAccounts()
-    CommandsHelp()
+    
     AddAccount("admin","admin","test@gmail.com")
 
+    print("Type 'help' to view commands!")
     loggedUser = None
     while 1==1:
-        command = input("\nEnter command:\n").lower()
-        if (command == "help"): CommandsHelp()
-        if (command == "login"): loggedUser = Login()
-        if (command == "logout"):
-            loggedUser = None
-            print(f"User [{loggedUser.name}- ({loggedUser.uuid})] Logged Out!")
+        if UiMode == 1:
+            command = input("\n[ACCOUNT MODE] > Enter command:\n> ").lower()
+            if (command == "help"): CommandsHelp()
+            if (command == "notes"):
+                if (loggedUser is None):
+                    print("You need to login first!")
+                else:
+                    UiMode = 2
+                    print("Entered In Notes Mode!")
+                    import os; os.system('cls' if os.name == 'nt' else 'clear')
+                    
+            if (command == "login"): loggedUser = Login()
+            if (command == "logout"):
+                loggedUser = None
+                print(f"User [{loggedUser.name}- ({loggedUser.uuid})] Logged Out!")
 
-        if (command == "addaccount"): 
-            username = input("Enter username:\n")
-            password = input("Enter password:\n")
-            email = input("Enter email:\n")
-            AddAccount(username,password,email)
-        if (command == "removeaccount"):
-            uuid = input("Enter user email or uuid\n")
-            RemoveAccount(uuid)
+            if (command == "addaccount"): 
+                username = input("Enter username:\n")
+                password = input("Enter password:\n")
+                email = input("Enter email:\n")
+                AddAccount(username,password,email)
+            if (command == "removeaccount"):
+                uuid = input("Enter user email or uuid\n")
+                RemoveAccount(uuid)
 
-        if (command == "viewaccount"):
-            if (loggedUser is None):
-                print("Not logged in!")
-            else:
-                print(loggedUser)
+            if (command == "viewaccount"):
+                if (loggedUser is None):
+                    print("Not logged in!")
+                else:
+                    print(loggedUser)
 
-        if (command == "showaccounts"):
-            index = 0
-            for account in Accounts:
-                index = index + 1
-                print(f"ACCOUNT: ({index})")
-                print(account)
+            if (command == "showaccounts"):
+                index = 0
+                for account in Accounts:
+                    index = index + 1
+                    print(f"ACCOUNT: ({index})")
+                    print(account)
 
-        if (command == "exit"): break
+            if (command == "exit"): break
+
+        #! NOTE EDIT MODE
+        elif UiMode == 2:
+            command = input("\n[NOTES MODE] > Enter command:\n> ").lower()
+            if (command == "help"): CommandsHelp()
+            if (command == "exit"):
+                import os; os.system('cls' if os.name == 'nt' else 'clear')
+                UiMode = 1
 
     #Reset accounts!
     #RemoveAccounts()
 
-    print("\nEND\n")
+    print("\BYE! 👋\n")
