@@ -119,10 +119,9 @@ def RestoreAccounts():
     print(f"Restored {len(Accounts)} account(s)...\n")
 
 def ComputeMD5hash(password,salt):
-    from hashlib import md5
-    m = md5()
-    m.update((password + salt).encode('utf-8'))
-    return str(m.digest())
+    import hashlib
+    result = hashlib.md5((password + salt).encode())
+    return (result.hexdigest())
 
 
 
