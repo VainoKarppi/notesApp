@@ -2,33 +2,41 @@
 
 Accounts = []
 class Account:
-    def __init__(self, name, password, uuid = None, salt = None):
+    def __init__(self, name, password, email, uuid = None, salt = None):
         from uuid import uuid4
         from random import randint
         self.uuid = str(uuid4()) if uuid is None else uuid
         self.name = name
         self.salt = str(randint(1000000,9999999)) if salt is None else salt
+        self.email = email
         self.password = password if IsMD5hash(password) else ComputeMD5hash(password,self.salt)
     
     def __str__(self):
-        return(f"\t uuid: {self.uuid}\n\t name: {self.name}\n\t password: {self.password}\n\t salt: {self.salt}\n")
+        return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\t email: {self.email}\n\tsalt: {self.salt}\n")
 
 
 
 def Login():
-    username = input("Enter username:\n")
+    username = input("Enter username or email:\n")
     password = input("Enter password:\n")
 
-    fetchedAccounts = [x for x in Accounts if x.name == username]
+    isEmail = '@' in username
+    fetchedAccounts = []
+    if isEmail:
+        fetchedAccounts = [x for x in Accounts if x.email == username]
+    else:
+        fetchedAccounts = [x for x in Accounts if x.name == username]
     for account in fetchedAccounts:
+        #TODO what if there is a username and same password is use for two accounts?? (Ask for email)
         hashedPassword = ComputeMD5hash(password,account.salt)
         if hashedPassword == account.password:
-            print(f"Account: ({account.name}) | ({account.uuid}) Logged in!")   
+            print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
             return account
         
     print(f"Invalid username or password! ({username})")
     return None
 
+# Returns True if successfully removed. False if not
 def RemoveAccount(uuid):
     import json
     print(f"Remoing account... ({uuid})")
@@ -36,7 +44,7 @@ def RemoveAccount(uuid):
     account = [x for x in Accounts if x.uuid == uuid]
     if account is []:
         print("Cannot find user with this uuid!")
-        return
+        return False
     
     Accounts.remove(account[0])
     jsonData = json.dumps([item.__dict__ for item in Accounts])
@@ -45,12 +53,21 @@ def RemoveAccount(uuid):
     with open('accounts.json', 'r+') as outfile:
         outfile.write(jsonData)
         outfile.close()
+    return True
 
-def AddAccount(name, password):
+
+# Returns create Account class
+def AddAccount(name, password, email):
     import json
 
-    print(f"Creating account... ({name})\n")
-    account = Account(name,password)
+    print(f"Creating account... ({name}) - ({email})\n")
+
+    emailInUse = next((x for x in Accounts if x.email == email), None) != None
+    if (emailInUse):
+        print("Email already in use!")
+        return None
+    
+    account = Account(name,password,email)
     Accounts.append(account)
     
     jsonData = json.dumps([item.__dict__ for item in Accounts])
@@ -61,6 +78,7 @@ def AddAccount(name, password):
         outfile.close()
 
     return account
+
 
 def RemoveAccounts():
     import json
@@ -82,7 +100,7 @@ def RestoreAccounts():
 
     global Accounts
     for account in accounts:
-        loadedAccount = Account(account['name'],account['password'],account['uuid'],account['salt'])
+        loadedAccount = Account(account['name'],account['password'],account['email'],account['uuid'],account['salt'])
         Accounts.append(loadedAccount)
 
     print(f"Restored {len(Accounts)} account(s)...\n")
@@ -99,22 +117,46 @@ def IsMD5hash(password: str) -> bool:
     import re
     return bool(re.match(r"^[a-fA-F0-9]{32}$", password))
 
+def CommandsHelp():
+    print(f"\nHelp - (Show this help page)")
+    print(f"Login - (Login to account)")
+    print(f"AddAccount - (Create Account)")
+    print(f"RemoveAccount - (Remove Account)")
+    print(f"ShowAccount - (Shows account info)")
+    print(f"ShowAccounts - (Show All Accounts)\n")
+
+
+
 if __name__=='__main__':
     print("STARTING PROGRAM...\n")
+    RestoreAccounts()
+    CommandsHelp()
+    AddAccount("admin","admin")
+
+    loggedUser = None
+    while 1==1:
+        command = input("\nEnter command:\n").lower()
+        if (command == "help"): CommandsHelp()
+        if (command == "login"): loggedUser = Login()
+        if (command == "addaccount"): AddAccount()
+        if (command == "removeaccount"): RemoveAccount()
+
+        if (command == "showaccounts"):
+            index = 0
+            for account in Accounts:
+                index = index + 1
+                print(f"ACCOUNT: ({index})")
+                print(account)
+    
 
     #Reset accounts!
     #RemoveAccounts()
     
-    RestoreAccounts()
+    
 
     #Add Account:
     #AddAccount("admin","admin")
 
-    index = 0
-    for account in Accounts:
-        index = index + 1
-        print(f"ACCOUNT {index}")
-        print(account)
-    del index
+    
 
     print("\nEND\n")
