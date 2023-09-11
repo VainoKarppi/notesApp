@@ -41,12 +41,18 @@ def RemoveAccount(uuid):
     import json
     print(f"Remoing account... ({uuid})")
 
-    account = [x for x in Accounts if x.uuid == uuid]
-    if account is []:
+    account = None
+    isEmail = '@' in uuid
+    if isEmail:
+        account = next((x for x in Accounts if x.email == uuid), None)
+    else:
+        account = next((x for x in Accounts if x.uuid == uuid), None)
+
+    if account is None:
         print("Cannot find user with this uuid!")
         return False
     
-    Accounts.remove(account[0])
+    Accounts.remove(account)
     jsonData = json.dumps([item.__dict__ for item in Accounts])
 
     # Overwrite ALL instead of add single
