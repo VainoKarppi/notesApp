@@ -19,16 +19,13 @@ class Account:
 
 
 
-def Login():
-    username = input("Enter username or email:\n")
-    password = input("Enter password:\n")
-
-    isEmail = '@' in username
+def Login(usernameOrEmail: str, password: str) -> Account:
+    isEmail = '@' in usernameOrEmail
     fetchedAccounts = []
     if isEmail:
-        fetchedAccounts = [x for x in Accounts if x.email == username]
+        fetchedAccounts = [x for x in Accounts if x.email == usernameOrEmail]
     else:
-        fetchedAccounts = [x for x in Accounts if x.name == username]
+        fetchedAccounts = [x for x in Accounts if x.name == usernameOrEmail]
     for account in fetchedAccounts:
         #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
         hashedPassword = ComputeMD5hash(password,account.salt)
@@ -36,12 +33,11 @@ def Login():
             print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
             return account
         
-    print(f"Invalid username or password! ({username})")
+    print(f"Invalid username or password! ({usernameOrEmail})")
     return None
 
 # Returns True if successfully removed. False if not
-def RemoveAccount(uuid):
-    import json
+def RemoveAccount(uuid) -> bool:
     print(f"Remoing account... ({uuid})")
 
     account = None
@@ -62,9 +58,7 @@ def RemoveAccount(uuid):
 
 
 # Returns create Account class
-def AddAccount(name, password, email):
-    import json
-    
+def AddAccount(name, password, email) -> Account:
     print(f"Creating account... ({name}) - ({email})\n")
 
     if '@' in name:
@@ -86,7 +80,8 @@ def AddAccount(name, password, email):
 
     return account
 
-def UpdateAccounts():
+def UpdateAccounts() -> None:
+    import json
     jsonData = json.dumps([item.__dict__ for item in Accounts])
 
     # Overwrite ALL instead of add single
@@ -95,7 +90,7 @@ def UpdateAccounts():
         outfile.close()
 
 
-def RemoveAccounts():
+def RemoveAccounts() -> None:
     import os
     if os.stat("accounts.json").st_size == 0: return
 
@@ -104,7 +99,7 @@ def RemoveAccounts():
     global Accounts
     Accounts = []
 
-def RestoreAccounts():
+def RestoreAccounts() -> None:
     print("Restoring accounts...")
     import json
     import os
@@ -120,7 +115,7 @@ def RestoreAccounts():
 
     print(f"Restored {len(Accounts)} account(s)...\n")
 
-def ComputeMD5hash(password,salt):
+def ComputeMD5hash(password: str, salt: str) -> str:
     import hashlib
     result = hashlib.md5((password + salt).encode())
     return (result.hexdigest())
@@ -158,8 +153,8 @@ class Note:
     def __str__(self):
         return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n")
 
-def AddNote(user: Account, subject: str, text: str):
-    import json
+
+def AddNote(user: Account, subject: str, text: str) -> bool:
     print(f"Creating new note for user: [({user.name}) - ({user.uuid})] with subject: ({subject})")
 
     newNote = Note(user.uuid,subject,text)
@@ -168,7 +163,7 @@ def AddNote(user: Account, subject: str, text: str):
     UpdateNotes()
 
 
-def UpdateNotes():
+def UpdateNotes() -> None:
     import json
 
     jsonData = json.dumps([item.__dict__ for item in Notes])
@@ -191,6 +186,7 @@ def RemoveNote(user: Account, subject: str) -> bool:
     return True
 
 
+def RestoreNotes() -> None:
     print("Restoring notes...")
     import json
     import os
