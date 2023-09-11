@@ -162,10 +162,16 @@ class Note:
 def AddNote(user: Account, subject: str, text: str) -> bool:
     print(f"Creating new note for user: [({user.name}) - ({user.uuid})] with subject: ({subject})")
 
+    subjectInUse = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject == subject))), None)
+    if (subjectInUse):
+        print("Subject name already in use!")
+        return False
+
     newNote = Note(user.uuid,subject,text)
     Notes.append(newNote)
 
     UpdateNotes()
+    return True
 
 
 def UpdateNotes() -> None:
