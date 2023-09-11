@@ -25,3 +25,18 @@ def RestoreAccounts():
         Accounts.append(loadedAccount)
 
     print(f"Restored {len(Accounts)} account(s)...\n")
+
+def ComputeMD5hash(password,salt):
+    import hashlib
+    from hashlib import md5
+    m = hashlib.md5()
+    saltedPassword = password + salt
+    m.update(saltedPassword.encode('utf-8'))
+    md5string = m.digest()
+    return md5string
+
+
+
+def IsMD5hash(string: str) -> bool:
+    import re
+    return bool(re.match(r"^[a-fA-F0-9]{32}$", string))
