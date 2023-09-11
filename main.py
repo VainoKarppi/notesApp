@@ -38,7 +38,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
 
 # Returns True if successfully removed. False if not
 def RemoveAccount(uuidOrEmail) -> bool:
-    print(f"Remoing account... ({uuidOrEmail})")
+    print(f"Removing account... ({uuidOrEmail})")
 
     account = None
     isEmail = '@' in uuidOrEmail
@@ -91,6 +91,8 @@ def UpdateAccounts() -> None:
 
 
 def RemoveAccounts() -> None:
+    print("Clearing all saved accounts...")
+
     import os
     if os.stat("accounts.json").st_size == 0: return
 
@@ -99,8 +101,10 @@ def RemoveAccounts() -> None:
     global Accounts
     Accounts = []
 
+
 def RestoreAccounts() -> None:
     print("Restoring accounts...")
+
     import json
     import os
 
@@ -120,11 +124,11 @@ def UserSessionValid(uuid: str) -> bool:
     found = next((x for x in Accounts if x.uuid == uuid), None) != None
     return found
 
+
 def ComputeMD5hash(password: str, salt: str) -> str:
     import hashlib
     result = hashlib.md5((password + salt).encode())
     return (result.hexdigest())
-
 
 
 def IsMD5hash(password: str) -> bool:
@@ -185,6 +189,7 @@ def UpdateNotes() -> None:
 
 
 def RemoveNote(user: Account, subject: str) -> bool:
+    print(f"Removing a note from user: [({user.name}) - ({user.uuid})] with subject: {subject}")
     noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
     if (noteToDelete is None):
         print("No note found with this subject to be deleted!")
@@ -197,6 +202,8 @@ def RemoveNote(user: Account, subject: str) -> bool:
 
 
 def RemoveNotes() -> None:
+    print("Clearing all saved notes...")
+
     import os
     if os.stat("notes.json").st_size == 0: return
 
@@ -207,6 +214,7 @@ def RemoveNotes() -> None:
 
 def RestoreNotes() -> None:
     print("Restoring notes...")
+
     import json
     import os
 
@@ -253,7 +261,7 @@ def CommandsHelp():
         print(f"Logout - (Login to account)")
         print(f"AddAccount - (Create Account)")
         print(f"RemoveAccount - (Remove Account)")
-        print(f"ViewAccount - (Shows account info)")
+        print(f"ViewAccount - (Shows current account info)")
         print(f"ShowAccounts - (Show All Accounts)")
         print(f"Exit - (Closes Program)\n")
     elif UiMode == 2:
@@ -275,13 +283,13 @@ if __name__=='__main__':
     RestoreNotes()
 
     if (len(Accounts) == 0):
-        AddAccount("admin","admin","test@gmail.com")
+        AddAccount("admin","admin","admin@gmail.com")
 
     print("Type 'help' to view commands!")
     loggedUser = None
     while 1==1:
         if UiMode == 1:
-            command = input("\n[ACCOUNT MODE] > Enter command:\n> ").lower()
+            command = input("\n[*ACCOUNT MODE*] > Enter command:\n> ").lower()
 
             # Make sure session is still valid
             if (loggedUser is not None and UserSessionValid(loggedUser.uuid) == False): loggedUser = None; continue
@@ -334,7 +342,7 @@ if __name__=='__main__':
 
         #! NOTE EDIT MODE
         elif UiMode == 2:
-            command = input("\n[NOTES MODE] > Enter command:\n> ").lower()
+            command = input("\n[*NOTES MODE*] > Enter command:\n> ").lower()
 
             if ((loggedUser is None) or (UserSessionValid(loggedUser.uuid) == False)):
                 import os; os.system('cls' if os.name == 'nt' else 'clear')
@@ -396,7 +404,7 @@ if __name__=='__main__':
                     notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and (startDate < ParseStringToDate(x.creationTimeUTC) < endDate))]
                     print(f"Found {len(notes)} note(s) with these date filters!")
                     for note in notes: print(note)
-                    
+
                 elif (mode == "3"):
                     textFilter = input("\nEnter text filter:\n> ")
                     notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and textFilter.lower() in x.text.lower())]
