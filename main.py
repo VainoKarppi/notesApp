@@ -33,11 +33,10 @@ def Login(usernameOrEmail: str, password: str) -> Account:
             print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
             return account
         
-    print(f"Invalid username or password! ({usernameOrEmail})")
-    return None
+    raise ValueError(f"Invalid username or password! ({usernameOrEmail})")
 
 # Returns True if successfully removed. False if not
-def RemoveAccount(uuidOrEmail) -> bool:
+def RemoveAccount(uuidOrEmail) -> None:
     print(f"Removing account... ({uuidOrEmail})")
 
     account = None
@@ -47,31 +46,19 @@ def RemoveAccount(uuidOrEmail) -> bool:
     else:
         account = next((x for x in Accounts if x.uuid == uuidOrEmail), None)
 
-    if account is None:
-        print("Cannot find user with this uuid or email!")
-        return False
-    
     Accounts.remove(account)
     UpdateAccounts()
-
-    return True
 
 
 # Returns create Account class
 def AddAccount(name, password, email) -> Account:
     print(f"Creating account... ({name}) - ({email})\n")
 
-    if '@' in name:
-        print("Username cannot be email!")
-        return None
-    if '@' not in email:
-        print("Invalid Email!")
-        return None
+    if '@' in name: raise ValueError("Username cannot be email!")
+    if '@' not in email: raise ValueError("Invalid Email!")
 
     emailInUse = next((x for x in Accounts if x.email.lower() == email.lower()), None) != None
-    if (emailInUse):
-        print("Email already in use!")
-        return None
+    if (emailInUse): raise ValueError("Email already in use!")
     
     account = Account(name,password,email)
     Accounts.append(account)
@@ -157,19 +144,16 @@ class Note:
         return(f"\townerUUID: {self.ownerUUID}\n\tsubject: {self.subject}\n\ttext: {self.text}\n\tcreationTimeUTC: {self.creationTimeUTC}\n")
 
 
-def AddNote(user: Account, subject: str, text: str) -> bool:
+def AddNote(user: Account, subject: str, text: str) -> None:
     print(f"Creating new note for user: [({user.name}) - ({user.uuid})] with subject: ({subject})")
 
     subjectInUse = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
-    if (subjectInUse):
-        print("Subject name already in use!")
-        return False
+    if (subjectInUse): raise ValueError("Subject name already in use!")
 
     newNote = Note(user.uuid,subject,text)
     Notes.append(newNote)
 
     UpdateNotes(True)
-    return True
 
 
 def UpdateNotes(append: bool = False) -> None:
@@ -181,17 +165,13 @@ def UpdateNotes(append: bool = False) -> None:
     with open('notes.json', mode) as outfile: outfile.write(jsonData)
 
 
-def RemoveNote(user: Account, subject: str) -> bool:
+def RemoveNote(user: Account, subject: str) -> None:
     print(f"Removing a note from user: [({user.name}) - ({user.uuid})] with subject: {subject}")
     noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
-    if (noteToDelete is None):
-        print("No note found with this subject to be deleted!")
-        return False
+    if (noteToDelete is None): raise ValueError("No note found with this subject to be deleted!")
 
     Notes.remove(noteToDelete)
     UpdateNotes()
-
-    return True
 
 
 def RemoveNotes() -> None:
@@ -280,135 +260,142 @@ if __name__=='__main__':
     print("Type 'help' to view commands!")
     loggedUser = None
     while 1==1:
-        #* ACCOUNT MODE
-        if UiMode == 1:
-            command = input("\n[*ACCOUNT MODE*] > Enter command:\n> ").lower()
+        try:
+            #* ACCOUNT MODE
+            if UiMode == 1:
+                command = input("\n[*ACCOUNT MODE*]: Enter command:\n> ").lower()
 
-            # Make sure session is still valid
-            if (loggedUser is not None and UserSessionValid(loggedUser.uuid) == False): loggedUser = None; continue
+                # Make sure session is still valid
+                if (loggedUser is not None and UserSessionValid(loggedUser.uuid) == False): loggedUser = None; print("Logged out! Session invalid"); continue
 
-            if (command == "help"): CommandsHelp()
-            if (command == "notes"):
-                if (loggedUser is None):
-                    print("You need to login first!")
-                else:
-                    UiMode = 2
-                    print("Entered In Notes Mode!")
-                    import os; os.system('cls' if os.name == 'nt' else 'clear')
-                    
-            if (command == "login"):
-                if (loggedUser is not None): print("Already logged in!"); continue
-
-                username = input("Enter username or email:\n> ")
-                password = input("Enter password:\n> ")
-                loggedUser = Login(username,password)
-            
-            if (command == "logout"):
-                if (loggedUser is None): continue
-                loggedUser = None
-                print(f"User [{loggedUser.name}- ({loggedUser.uuid})] Logged Out!")
-
-            if (command == "addaccount"): 
-                username = input("Enter username:\n> ")
-                password = input("Enter password:\n> ")
-                email = input("Enter email:\n> ")
-                AddAccount(username,password,email)
-
-            if (command == "removeaccount"):
-                uuid = input("Enter user email or uuid\n> ")
-                RemoveAccount(uuid)
-
-            if (command == "viewaccount"):
-                if (loggedUser is None):
-                    print("Not logged in!")
-                else:
-                    print(loggedUser)
-
-            if (command == "showaccounts"):
-                index = 0
-                for account in Accounts:
-                    index = index + 1
-                    print(f"ACCOUNT: ({index})")
-                    print(account)
-
-            if (command == "exit"): break
-
-        #* NOTE EDIT MODE
-        elif UiMode == 2:
-            command = input("\n[*NOTES MODE*] > Enter command:\n> ").lower()
-
-            if ((loggedUser is None) or (UserSessionValid(loggedUser.uuid) == False)):
-                import os; os.system('cls' if os.name == 'nt' else 'clear')
-                print("NOTES Mode Session Terminated! (invalid session)")
-                UiMode = 1
-                continue
-
-            if (command == "help"): CommandsHelp()
-                
-            if (command == "shownotes"):
-                thisUsersNotes = [x for x in Notes if x.ownerUUID == loggedUser.uuid]
-                if (len(thisUsersNotes) == 0): print("No notes found for current user!")
-                
-                index = 0
-                for note in thisUsersNotes:
-                    index = index + 1
-                    print(f"NOTE: ({index})")
-                    print(note)
-
-            if (command == "addnote"):
-                subject = input("Enter subject name:\n> ")
-                text = input("Enter text:\n> ")
-                AddNote(loggedUser,subject,text)
-
-            if (command == "removenote"):
-                subject = input("Enter subject name of the note you want to delete:\n> ")
-                RemoveNote(loggedUser,subject)
-
-            if (command == "editnote"):
-                subject = input("Enter subject name to edit:\n> ")
-                # Uses memory address reference for the list item
-                note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
-                if (note is None): print("No note was found with this subject name!"); continue
-                note.text = input("Enter new text for the note\n> ")
-                UpdateNotes()
-
-            if (command == "readnote"):
-                subject = input("Enter subject name to read:\n> ")
-                note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
-                if (note is None): print("No note was found with this subject name!"); continue
-                print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
-
-            if (command == "searchnote"):
-                mode = input("Enter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
-                if (mode == "1"):
-                    subjectFilter = input("\nEnter subject filter:\n> ")
-                    notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and subjectFilter.lower() in x.subject.lower())]
-                    print(f"Found {len(notes)} note(s) with this subject filter!")
-                    for note in notes: print(note)
-
-                #TODO add hours and minutes support
-                elif (mode == "2"):
-                    startDateText = input("\nEnter start date for filter (dd/mm/yyyy):\n> ")
-                    startDate = datetime.datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
-
-                    endDateText = input("\nEnter end date for filter (dd/mm/yyyy) - (leave empty for today):\n> ")
-                    endDate = datetime.datetime.utcnow()
-                    if (len(endDateText) != 0):
-                        endDate = datetime.datetime(int(endDateText.split('/')[2]), int(endDateText.split('/')[1]), int(endDateText.split('/')[0]))
+                if (command == "help"): CommandsHelp()
+                if (command == "notes"):
+                    if (loggedUser is None):
+                        print("You need to login first!")
+                    else:
+                        UiMode = 2
+                        print("Entered In Notes Mode!")
+                        import os; os.system('cls' if os.name == 'nt' else 'clear')
                         
-                    notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and (startDate < ParseStringToDate(x.creationTimeUTC) < endDate))]
-                    print(f"Found {len(notes)} note(s) with these date filters!")
-                    for note in notes: print(note)
+                if (command == "login"):
+                    if (loggedUser is not None): print("Already logged in!"); continue
 
-                elif (mode == "3"):
-                    textFilter = input("\nEnter text filter:\n> ")
-                    notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and textFilter.lower() in x.text.lower())]
-                    print(f"Found {len(notes)} note(s) with this subject filter!")
-                    for note in notes: print(note)
+                    username = input("Enter username or email:\n> ")
+                    password = input("Enter password:\n> ")
+                    loggedUser = Login(username,password)
+                
+                if (command == "logout"):
+                    if (loggedUser is None): continue
+                    loggedUser = None
+                    print(f"User [{loggedUser.name}- ({loggedUser.uuid})] Logged Out!")
 
-            if (command == "exit"):
-                import os; os.system('cls' if os.name == 'nt' else 'clear')
-                UiMode = 1
+                if (command == "addaccount"): 
+                    username = input("Enter username:\n> ")
+                    password = input("Enter password:\n> ")
+                    email = input("Enter email:\n> ")
+                    AddAccount(username,password,email)
+
+                if (command == "removeaccount"):
+                    uuid = input("Enter user email or uuid\n> ")
+                    RemoveAccount(uuid)
+
+                if (command == "viewaccount"):
+                    if (loggedUser is None):
+                        print("Not logged in!")
+                    else:
+                        print(loggedUser)
+
+                if (command == "showaccounts"):
+                    index = 0
+                    for account in Accounts:
+                        index = index + 1
+                        print(f"ACCOUNT: ({index})")
+                        print(account)
+
+                if (command == "exit"): break
+
+            #* NOTE EDIT MODE
+            elif UiMode == 2:
+                command = input("\n[*NOTES MODE*]: Enter command:\n> ").lower()
+
+                if ((loggedUser is None) or (UserSessionValid(loggedUser.uuid) == False)):
+                    import os; os.system('cls' if os.name == 'nt' else 'clear')
+                    print("NOTES Mode Session Terminated! (invalid session)")
+                    UiMode = 1
+                    continue
+
+                if (command == "help"): CommandsHelp()
+                    
+                if (command == "shownotes"):
+                    thisUsersNotes = [x for x in Notes if x.ownerUUID == loggedUser.uuid]
+                    if (len(thisUsersNotes) == 0): print("No notes found for current user!")
+                    
+                    index = 0
+                    for note in thisUsersNotes:
+                        index = index + 1
+                        print(f"NOTE: ({index})")
+                        print(note)
+
+                if (command == "addnote"):
+                    subject = input("Enter subject name:\n> ")
+                    text = input("Enter text:\n> ")
+                    AddNote(loggedUser,subject,text)
+
+                if (command == "removenote"):
+                    subject = input("Enter subject name of the note you want to delete:\n> ")
+                    RemoveNote(loggedUser,subject)
+
+                if (command == "editnote"):
+                    subject = input("Enter subject name to edit:\n> ")
+                    # Uses memory address reference for the list item
+                    note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
+                    if (note is None): print("No note was found with this subject name!"); continue
+                    note.text = input("Enter new text for the note\n> ")
+                    UpdateNotes()
+
+                if (command == "readnote"):
+                    subject = input("Enter subject name to read:\n> ")
+                    note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
+                    if (note is None): print("No note was found with this subject name!"); continue
+                    print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
+
+                if (command == "searchnote"):
+                    mode = input("Enter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
+                    if (mode == "1"):
+                        subjectFilter = input("\nEnter subject filter:\n> ")
+                        notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and subjectFilter.lower() in x.subject.lower())]
+                        print(f"Found {len(notes)} note(s) with this subject filter!")
+                        for note in notes: print(note)
+
+                    #TODO add hours and minutes support
+                    elif (mode == "2"):
+                        startDateText = input("\nEnter start date for filter (dd/mm/yyyy):\n> ")
+                        startDate = datetime.datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
+
+                        endDateText = input("\nEnter end date for filter (dd/mm/yyyy) - (leave empty for today):\n> ")
+                        endDate = datetime.datetime.utcnow()
+                        if (len(endDateText) != 0):
+                            endDate = datetime.datetime(int(endDateText.split('/')[2]), int(endDateText.split('/')[1]), int(endDateText.split('/')[0]))
+                            
+                        notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and (startDate < ParseStringToDate(x.creationTimeUTC) < endDate))]
+                        print(f"Found {len(notes)} note(s) with these date filters!")
+                        for note in notes: print(note)
+
+                    elif (mode == "3"):
+                        textFilter = input("\nEnter text filter:\n> ")
+                        notes = [x for x in Notes if (x.ownerUUID == loggedUser.uuid and textFilter.lower() in x.text.lower())]
+                        print(f"Found {len(notes)} note(s) with this subject filter!")
+                        for note in notes: print(note)
+
+                if (command == "exit"):
+                    import os; os.system('cls' if os.name == 'nt' else 'clear')
+                    UiMode = 1
+
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
 
     #! DEBUG COMMANDS
     #Reset accounts!
