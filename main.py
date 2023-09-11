@@ -197,6 +197,15 @@ def RemoveNote(user: Account, subject: str) -> bool:
     return True
 
 
+def RemoveNotes() -> None:
+    import os
+    if os.stat("notes.json").st_size == 0: return
+
+    open('notes.json', 'w').close()
+    global Notes
+    Notes = []
+
+
 def RestoreNotes() -> None:
     print("Restoring notes...")
     import json
@@ -361,5 +370,8 @@ if __name__=='__main__':
 
     #Reset accounts!
     #RemoveAccounts()
+
+    #Reset notes!
+    #RemoveNotes()
 
     print("\BYE! 👋\n")
