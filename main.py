@@ -359,12 +359,17 @@ if __name__=='__main__':
                 RemoveNote(loggedUser,subject)
 
             if (command == "editnote"):
-                print("TODO edit note")
+                subject = input("Enter subject name to edit:\n")
+                # Uses memory address reference for the list item
+                note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
+                if (note is None): print("No note was found with this subject name!"); continue
+                note.text = input("Enter new text for the note\n")
+                UpdateNotes()
 
             if (command == "readnote"):
                 subject = input("Enter subject name to read:\n")
                 note = next((x for x in Notes if x.subject.lower() == subject.lower()), None)
-                if (note is None): print("No note was found with this subject!"); continue
+                if (note is None): print("No note was found with this subject name!"); continue
                 print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
 
             if (command == "exit"):
