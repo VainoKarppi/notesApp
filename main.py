@@ -1,5 +1,8 @@
 
 
+#! ----------------------
+#! ACCOUNTS METHODS
+#! ----------------------
 Accounts = []
 class Account:
     def __init__(self, name, password, email, uuid = None, salt = None):
@@ -137,6 +140,73 @@ def IsMD5hash(password: str) -> bool:
 
 
 
+
+
+
+
+#! ----------------------
+#! NOTES METHODS
+#! ----------------------
+Notes = []
+class Note:
+    def __init__(self, ownerUUID: str, subject: str, text: str):
+        import datetime
+        self.ownerUUID = ownerUUID
+        self.subject = subject
+        self.text = text
+        self.creationTimeUTC = str(datetime.datetime.utcnow())
+
+    def __str__(self):
+        return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n")
+
+def AddNote(user: Account, subject: str, text: str):
+    import json
+    print(f"Creating new note for user: [({user.name}) - ({user.uuid})] with subject: ({subject})")
+
+    newNote = Note(user.uuid,subject,text)
+    Notes.append(newNote)
+
+    jsonData = json.dumps([item.__dict__ for item in Notes])
+
+    # Overwrite ALL instead of add single
+    with open('notes.json', 'r+') as outfile:
+        outfile.write(jsonData)
+        outfile.close()
+
+def RestoreNotes():
+    print("Restoring notes...")
+    import json
+    import os
+
+    if os.stat("notes.json").st_size == 0: return
+    with open('notes.json', 'r') as data:
+        notes = json.load(data)
+
+    global Notes
+    for note in notes:
+        loadedNote = Note(note['ownerUUID'],note['subject'],note['text'])
+        loadedNote.creationTimeUTC = note['creationTimeUTC']
+
+        Notes.append(loadedNote)
+
+    print(f"Restored {len(Notes)} notes(s)...\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #! --------------------
 #! USER INTERFACE
 #! --------------------
@@ -155,6 +225,9 @@ def CommandsHelp():
     elif UiMode == 2:
         print(f"\nHelp - (Show this help page)")
         print(f"AddNote - (Create new note)")
+        print(f"RemoveNote - (Removes a note)")
+        print(f"EditNote - (Edit Existing Note)")
+        print(f"ReadNote - (View Existing Note)")
         print(f"Exit - (Return to Account Mode)")
 
 
@@ -162,8 +235,10 @@ def CommandsHelp():
 if __name__=='__main__':
     print("STARTING PROGRAM...\n")
     RestoreAccounts()
+    RestoreNotes()
     
-    AddAccount("admin","admin","test@gmail.com")
+    if (len(Accounts) == 0):
+        AddAccount("admin","admin","test@gmail.com")
 
     print("Type 'help' to view commands!")
     loggedUser = None
@@ -212,6 +287,21 @@ if __name__=='__main__':
         elif UiMode == 2:
             command = input("\n[NOTES MODE] > Enter command:\n> ").lower()
             if (command == "help"): CommandsHelp()
+
+            if (command == "addnote"):
+                subject = input("Enter subject name:\n")
+                text = input("Enter text:\n")
+                AddNote(loggedUser,subject,text)
+
+            if (command == "removenote"):
+                print("TODO remove note")
+
+            if (command == "editnote"):
+                print("TODO edit note")
+
+            if (command == "readnote"):
+                print("TODO read note")
+
             if (command == "exit"):
                 import os; os.system('cls' if os.name == 'nt' else 'clear')
                 UiMode = 1
