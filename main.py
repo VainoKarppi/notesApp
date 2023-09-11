@@ -65,8 +65,15 @@ def RemoveAccount(uuid):
 # Returns create Account class
 def AddAccount(name, password, email):
     import json
-
+    
     print(f"Creating account... ({name}) - ({email})\n")
+
+    if '@' in name:
+        print("Username cannot be email!")
+        return None
+    if '@' not in email:
+        print("Invalid Email!")
+        return None
 
     emailInUse = next((x for x in Accounts if x.email == email), None) != None
     if (emailInUse):
@@ -166,7 +173,9 @@ if __name__=='__main__':
             password = input("Enter password:\n")
             email = input("Enter email:\n")
             AddAccount(username,password,email)
-        if (command == "removeaccount"): RemoveAccount()
+        if (command == "removeaccount"):
+            uuid = input("Enter user email or uuid\n")
+            RemoveAccount(uuid)
 
         if (command == "viewaccount"):
             if (loggedUser is None):
