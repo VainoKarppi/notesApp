@@ -9,3 +9,19 @@ class Account:
         self.password = password if IsMD5hash(password) else str(ComputeMD5hash(password,self.salt))
         
 
+
+def RestoreAccounts():
+    print("Restoring accounts...")
+    import json
+    import os
+
+    if os.stat("accounts.json").st_size == 0: return
+    with open('accounts.json', 'r') as data:
+        accounts = json.load(data)
+
+    global Accounts
+    for account in accounts:
+        loadedAccount = Account(account['name'],account['password'],account['uuid'],account['salt'])
+        Accounts.append(loadedAccount)
+
+    print(f"Restored {len(Accounts)} account(s)...\n")
