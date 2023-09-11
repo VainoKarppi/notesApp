@@ -115,6 +115,11 @@ def RestoreAccounts() -> None:
 
     print(f"Restored {len(Accounts)} account(s)...\n")
 
+
+def UserSessionValid(uuid: str) -> bool:
+    found = next((x for x in Accounts if x.uuid == uuid), None) != None
+    return found
+
 def ComputeMD5hash(password: str, salt: str) -> str:
     import hashlib
     result = hashlib.md5((password + salt).encode())
@@ -258,6 +263,10 @@ if __name__=='__main__':
     while 1==1:
         if UiMode == 1:
             command = input("\n[ACCOUNT MODE] > Enter command:\n> ").lower()
+
+            # Make sure session is still valid
+            if (loggedUser is not None and UserSessionValid(loggedUser.uuid) == False): loggedUser = None; continue
+
             if (command == "help"): CommandsHelp()
             if (command == "notes"):
                 if (loggedUser is None):
@@ -267,8 +276,15 @@ if __name__=='__main__':
                     print("Entered In Notes Mode!")
                     import os; os.system('cls' if os.name == 'nt' else 'clear')
                     
-            if (command == "login"): loggedUser = Login()
+            if (command == "login"):
+                if (loggedUser is not None): print("Already logged in!"); continue
+
+                username = input("Enter username or email:\n")
+                password = input("Enter password:\n")
+                loggedUser = Login(username,password)
+            
             if (command == "logout"):
+                if (loggedUser is None): continue
                 loggedUser = None
                 print(f"User [{loggedUser.name}- ({loggedUser.uuid})] Logged Out!")
 
@@ -299,6 +315,13 @@ if __name__=='__main__':
         #! NOTE EDIT MODE
         elif UiMode == 2:
             command = input("\n[NOTES MODE] > Enter command:\n> ").lower()
+
+            if ((loggedUser is None) or (UserSessionValid(loggedUser.uuid) == False)):
+                import os; os.system('cls' if os.name == 'nt' else 'clear')
+                print("NOTES Mode Session Terminated! (invalid session)")
+                UiMode = 1
+                continue
+
             if (command == "help"): CommandsHelp()
 
             if (command == "addnote"):
