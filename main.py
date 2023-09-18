@@ -210,3 +210,5 @@ if __name__=='__main__':
     #RemoveNotes()
 
     print("\nBYE! 👋\n")
+    
+    os.exit(0)
