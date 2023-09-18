@@ -63,6 +63,8 @@ def RestoreNotes() -> None:
     import json
     import os
 
+    if not os.path.isfile("notes.json"): open('notes.json', 'w').close()
+
     if os.stat("notes.json").st_size == 0: return
     with open('notes.json', 'r') as data: notes = json.load(data)
 

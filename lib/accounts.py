@@ -91,6 +91,8 @@ def RestoreAccounts() -> None:
     import json
     import os
 
+    if not os.path.isfile("accounts.json"): open('accounts.json', 'w').close()
+
     if os.stat("accounts.json").st_size == 0: return
     with open('accounts.json', 'r') as data: accounts = json.load(data)
 
