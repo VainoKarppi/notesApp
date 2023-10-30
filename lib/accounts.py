@@ -51,7 +51,7 @@ def RemoveAccount(uuidOrEmail) -> None:
 
 
 # Returns create Account class
-def AddAccount(name, password, email) -> Account:
+def AddAccount(name:str, password:str, email:str) -> Account:
     print(f"Creating account... ({name}) - ({email})\n")
 
     if '@' in name: raise ValueError("Username cannot be email!")

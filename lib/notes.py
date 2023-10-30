@@ -37,7 +37,7 @@ def UpdateNotes(append: bool = False) -> None:
     with open('notes.json', mode) as outfile: outfile.write(jsonData)
 
 
-def RemoveNote(user: accounts.Accounts, subject: str) -> None:
+def RemoveNote(user: accounts.Account, subject: str) -> None:
     print(f"Removing a note from user: [({user.name}) - ({user.uuid})] with subject: {subject}")
     noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
     if (noteToDelete is None): raise ValueError("No note found with this subject to be deleted!")
