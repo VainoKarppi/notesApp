@@ -12,7 +12,7 @@ class Account:
         self.name = name
         self.salt = str(randint(1000000,9999999)) if salt is None else salt
         self.email = email
-        self.password = password if IsMD5hash(password) else ComputeMD5hash(password,self.salt)
+        self.password = password if IsSHA3hash(password) else ComputeSHA3hash(password,self.salt)
     
     def __str__(self):
         return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n")
@@ -28,7 +28,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
         fetchedAccounts = [x for x in Accounts if x.name == usernameOrEmail]
     for account in fetchedAccounts:
         #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
-        hashedPassword = ComputeMD5hash(password,account.salt)
+        hashedPassword = ComputeSHA3hash(password,account.salt)
         if hashedPassword == account.password:
             print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
             return account
@@ -109,14 +109,15 @@ def IsUserSessionValid(uuid: str) -> bool:
     return found
 
 
-def ComputeMD5hash(password: str, salt: str) -> str:
+def ComputeSHA3hash(password: str, salt: str) -> str:
     import hashlib
-    result = hashlib.md5((password + salt).encode())
+    result = hashlib.sha3_256()
+    result.update((password + salt).encode())
     return (result.hexdigest())
 
 
-def IsMD5hash(password: str) -> bool:
+def IsSHA3hash(password:str) -> bool:
     import re
-    return bool(re.match(r"^[a-fA-F0-9]{32}$", password))
+    return bool(re.match(r"^[a-fA-F0-9]{64}$", password))
 
 
