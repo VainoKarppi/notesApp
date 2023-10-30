@@ -3,7 +3,7 @@ import datetime
 
 import lib.notes as notes
 import lib.accounts as accounts
-
+import lib.sqlite as sqlite
 
 
 
@@ -56,11 +56,15 @@ def CommandsHelp():
 if __name__=='__main__':
     import os; os.system('cls' if os.name == 'nt' else 'clear')
     print("STARTING PROGRAM...\n")
+    sqlite.Init()
+    
     accounts.RestoreAccounts()
     notes.RestoreNotes()
+    
 
     if (len(accounts.Accounts) == 0):
-        accounts.AddAccount("admin","admin","admin@gmail.com")
+        admin = accounts.AddAccount("admin","admin","admin@mail.com")
+        sqlite.InsertAccount(admin)
 
     print("Type 'help' to view commands!")
     loggedUser = None
@@ -88,6 +92,7 @@ if __name__=='__main__':
                     username = input("Enter username or email:\n> ")
                     password = input("Enter password:\n> ")
                     loggedUser = accounts.Login(username,password)
+                    sqlite.LoadAccount(loggedUser.uuid)
                 
                 if (command == "logout"):
                     if (loggedUser is None): continue

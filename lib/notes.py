@@ -11,6 +11,7 @@ class Note:
         self.subject = subject
         self.text = text
         self.creationTimeUTC = str(datetime.datetime.utcnow())
+        self.hidden = False
 
     def __str__(self):
         return(f"\townerUUID: {self.ownerUUID}\n\tsubject: {self.subject}\n\ttext: {self.text}\n\tcreationTimeUTC: {self.creationTimeUTC}\n")

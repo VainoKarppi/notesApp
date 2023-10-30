@@ -1,4 +1,5 @@
 import datetime
+import lib.sqlite as sqlite
 
 #! ----------------------
 #! ACCOUNTS FUNCTIONS
@@ -13,6 +14,7 @@ class Account:
         self.salt = str(randint(1000000,9999999)) if salt is None else salt
         self.email = email
         self.password = password if IsSHA3hash(password) else ComputeSHA3hash(password,self.salt)
+        self.hidden = False
     
     def __str__(self):
         return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n")
@@ -63,6 +65,8 @@ def AddAccount(name:str, password:str, email:str) -> Account:
     account = Account(name,password,email)
     Accounts.append(account)
     
+    sqlite.InsertAccount(account)
+
     UpdateAccounts(True)
 
     return account
