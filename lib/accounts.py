@@ -5,7 +5,7 @@ import datetime
 #! ----------------------
 Accounts = []
 class Account:
-    def __init__(self, name, password, email, uuid = None, salt = None):
+    def __init__(self, name:str, password:str, email:str, uuid:str = None, salt:str = None):
         from uuid import uuid4
         from random import randint
         self.uuid = str(uuid4()) if uuid is None else uuid
@@ -36,7 +36,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     raise ValueError(f"Invalid username or password! ({usernameOrEmail})")
 
 # Returns True if successfully removed. False if not
-def RemoveAccount(uuidOrEmail) -> None:
+def RemoveAccount(uuidOrEmail:str) -> None:
     print(f"Removing account... ({uuidOrEmail})")
 
     account = None
