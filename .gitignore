@@ -1,2 +1,4 @@
 accounts.json
 notes.json
+**/__pycache__/
+**/.vscode
