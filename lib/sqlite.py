@@ -1,18 +1,23 @@
 import datetime
 import sqlite3
+import uuid
 
 import lib.accounts as accounts
 import lib.notes as notes
 
-Conn = sqlite3.connect("notes.db")
+
+sqlite3.register_adapter(uuid.UUID, lambda u: u.bytes_le)
+sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
+
+Conn = sqlite3.connect("notes.db", detect_types=sqlite3.PARSE_DECLTYPES)
 
 def Init():
     try:
         cur = Conn.cursor()
 
         # Create accounts table
-        cur.execute("""CREATE TABLE IF NOT EXISTS accounts (
-                    uuid TEXT PRIMARY KEY,
+        cur.execute("""CREATE TABLE IF NOT EXISTS accounts (     
+                    uuid GUID PRIMARY KEY,
                     name TEXT NOT NULL,
                     salt INTEGER NOT NULL,
                     email TEXT NOT NULL,
@@ -21,7 +26,7 @@ def Init():
                 )""")
         
         # Create Notes Table
-        cur.execute("""CREATE TABLE notes (
+        cur.execute("""CREATE TABLE IF NOT EXISTS notes (
                     owner TEXT NOT NULL,
                     subject TEXT NOT NULL,
                     text TEXT,
@@ -30,17 +35,22 @@ def Init():
                 )""")
         
 
-
-    except:
-        print("ERROR")
+    except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
 
 
 
 # ACCOUNTS
 def InsertAccount(account):
-    import uuid
+    # TODO Make sure account uuid is already not added (USE PRIMARY KEY)
     cur = Conn.cursor()
-    cur.execute("INSERT INTO accounts (uuid,name,salt,email,password,hidden) VALUES (?,?,?,?,?,?)",(account.uuid, account.name, account.salt, account.email, account.password, account.hidden))
+    import uuid
+    uuid = uuid.UUID(bytes(account.uuid))
+    print(uuid)
+    cur.execute("INSERT INTO accounts (uuid,name,salt,email,password,hidden) VALUES (?,?,?,?,?,?)",(uuid.uuid4(), account.name, account.salt, account.email, account.password, account.hidden))
 
 def UpdateAccount(account):
     cur = Conn.cursor()

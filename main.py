@@ -56,14 +56,19 @@ def CommandsHelp():
 if __name__=='__main__':
     import os; os.system('cls' if os.name == 'nt' else 'clear')
     print("STARTING PROGRAM...\n")
+    
     sqlite.Init()
+
+    #accounts.RestoreAccounts()
+    #notes.RestoreNotes()
+    accounts.RemoveAccounts()
     
-    accounts.RestoreAccounts()
-    notes.RestoreNotes()
-    
+    admin = None
 
     if (len(accounts.Accounts) == 0):
         admin = accounts.AddAccount("admin","admin","admin@mail.com")
+
+    if (admin is not None):
         sqlite.InsertAccount(admin)
 
     print("Type 'help' to view commands!")
