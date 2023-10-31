@@ -6,6 +6,7 @@ import lib.accounts as accounts
 import lib.notes as notes
 
 
+# SUPPORT FOR UUID/GUID FOR DATABASE
 sqlite3.register_adapter(uuid.UUID, lambda u: u.bytes_le)
 sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 
@@ -17,7 +18,7 @@ def Init():
 
         # Create accounts table
         cur.execute("""CREATE TABLE IF NOT EXISTS accounts (     
-                    uuid GUID PRIMARY KEY,
+                    uuid GUID PRIMARY KEY NOT NULL,
                     name TEXT NOT NULL,
                     salt INTEGER NOT NULL,
                     email TEXT NOT NULL,
@@ -27,7 +28,7 @@ def Init():
         
         # Create Notes Table
         cur.execute("""CREATE TABLE IF NOT EXISTS notes (
-                    owner TEXT NOT NULL,
+                    owner GUID NOT NULL,
                     subject TEXT NOT NULL,
                     text TEXT,
                     creationTimeUTC DATE NOT NULL,
@@ -45,31 +46,43 @@ def Init():
 
 # ACCOUNTS
 def InsertAccount(account):
-    # TODO Make sure account uuid is already not added (USE PRIMARY KEY)
     cur = Conn.cursor()
-    import uuid
-    uuid = uuid.UUID(bytes(account.uuid))
-    print(uuid)
-    cur.execute("INSERT INTO accounts (uuid,name,salt,email,password,hidden) VALUES (?,?,?,?,?,?)",(uuid.uuid4(), account.name, account.salt, account.email, account.password, account.hidden))
+    cur.execute("INSERT INTO accounts (uuid,name,salt,email,password,hidden) VALUES (?,?,?,?,?,?)",(uuid.UUID(account.uuid), account.name, account.salt, account.email, account.password, account.hidden))
+    Conn.commit()
 
 def UpdateAccount(account):
     cur = Conn.cursor()
-    cur.execute("UPDATE accounts SET name = ?, email = ?, password = ?, hidden = ? WHERE uuid = ?",(account.name, account.email, account.password, account.hidden, account.uuid))
-
-def RemoveAccount(account):
+    cur.execute("UPDATE accounts SET name=:name, email=:email, password=:password, hidden=:hidden WHERE uuid=:uuid",
+                    {"name":account.name,"email":account.email,"password":account.password,"hidden":account.hidden,"uuid":uuid.UUID(account.uuid)})
+    Conn.commit()
+    
+def RemoveAccount(accountUUID:str):
     cur = Conn.cursor()
-    cur.execute("DELETE FROM accounts WHERE uuid = ?", (account.uuid))
+    cur.execute("DELETE FROM accounts WHERE uuid=:uuid", {"uuid": uuid.UUID(accountUUID)})
+    Conn.commit()
 
-def LoadAccount(uuid: str):
+def LoadAccount(accountUUID:str):
     cur = Conn.cursor()
-    print("asd")
-    cur.execute("SELECT * FROM accounts WHERE uuid = ?", (uuid))
-    print("asd")
-    results = cur.fetchall()
-    print("asd")
-    for row in results:
-        print(row)
+    cur.execute("SELECT * FROM accounts WHERE uuid=:uuid", {"uuid": uuid.UUID(accountUUID)})
+    result = cur.fetchone()
+    return result
 
+def LoadAllAccounts():
+    cur = Conn.cursor()
+    cur.execute("SELECT * FROM accounts")
+    result = cur.fetchall()
+    return result
+    
+
+def UuidInUse(accountUUID:str) -> bool:
+    cur = Conn.cursor()
+    cur.execute("SELECT name FROM accounts WHERE uuid=:uuid", {"uuid": uuid.UUID(accountUUID)})
+    result = cur.fetchone()
+    return result is not None
+
+def EmailInUse(email:str) -> bool:
+    result = Conn.cursor().execute("SELECT name FROM accounts WHERE email=:email", {"email": email}).fetchone()
+    return (result is not None)
 
 
 # NOTES

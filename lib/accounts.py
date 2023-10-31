@@ -1,17 +1,17 @@
 import datetime
-import lib.sqlite as sqlite
+import lib.sqlitedb as db
 
 #! ----------------------
 #! ACCOUNTS FUNCTIONS
 #! ----------------------
 Accounts = []
 class Account:
-    def __init__(self, name:str, password:str, email:str, uuid:str = None, salt:str = None):
+    def __init__(self, name:str, password:str, email:str, uuid:str = None, salt:int = None):
         from uuid import uuid4
         from random import randint
         self.uuid = str(uuid4()) if uuid is None else uuid
         self.name = name
-        self.salt = str(randint(1000000,9999999)) if salt is None else salt
+        self.salt = (randint(1000000,9999999)) if salt is None else salt
         self.email = email
         self.password = password if IsSHA3hash(password) else ComputeSHA3hash(password,self.salt)
         self.hidden = False
@@ -22,18 +22,16 @@ class Account:
 
 
 def Login(usernameOrEmail: str, password: str) -> Account:
-    isEmail = '@' in usernameOrEmail
-    fetchedAccounts = []
-    if isEmail:
-        fetchedAccounts = [x for x in Accounts if x.email.lower() == usernameOrEmail.lower()]
-    else:
-        fetchedAccounts = [x for x in Accounts if x.name == usernameOrEmail]
-    for account in fetchedAccounts:
-        #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
-        hashedPassword = ComputeSHA3hash(password,account.salt)
-        if hashedPassword == account.password:
-            print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
-            return account
+    result = db.Conn.cursor().execute("SELECT * FROM accounts WHERE name=:data COLLATE NOCASE OR email=:data COLLATE NOCASE", {"data": usernameOrEmail}).fetchone()
+    if (result is None): raise ValueError(f"Invalid username or email! ({usernameOrEmail})")
+
+    account = Account(result[1],result[4],result[3],result[0],result[2])
+
+    #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
+    hashedPassword = ComputeSHA3hash(password,account.salt)
+    if hashedPassword == account.password:
+        print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
+        return account
         
     raise ValueError(f"Invalid username or password! ({usernameOrEmail})")
 
@@ -41,15 +39,9 @@ def Login(usernameOrEmail: str, password: str) -> Account:
 def RemoveAccount(uuidOrEmail:str) -> None:
     print(f"Removing account... ({uuidOrEmail})")
 
-    account = None
-    isEmail = '@' in uuidOrEmail
-    if isEmail:
-        account = next((x for x in Accounts if x.email.lower() == uuidOrEmail.lower()), None)
-    else:
-        account = next((x for x in Accounts if x.uuid == uuidOrEmail), None)
+    result = db.Conn.cursor().execute("DELETE FROM accounts WHERE uuid=:data OR email=:data COLLATE NOCASE", {"data": uuidOrEmail}).fetchone()
+    print(result)
 
-    Accounts.remove(account)
-    UpdateAccounts()
 
 
 # Returns create Account class
@@ -59,64 +51,29 @@ def AddAccount(name:str, password:str, email:str) -> Account:
     if '@' in name: raise ValueError("Username cannot be email!")
     if '@' not in email: raise ValueError("Invalid Email!")
 
-    emailInUse = next((x for x in Accounts if x.email.lower() == email.lower()), None) != None
-    if (emailInUse): raise ValueError("Email already in use!")
+    result = db.Conn.cursor().execute("SELECT * FROM accounts WHERE name=:name COLLATE NOCASE OR email=:email COLLATE NOCASE", {"name":name, "email":email}).fetchone()
+    if (result is not None): raise ValueError("Email or Username already in use!")
     
     account = Account(name,password,email)
-    Accounts.append(account)
     
-    sqlite.InsertAccount(account)
-
-    UpdateAccounts(True)
+    db.InsertAccount(account)
 
     return account
 
-def UpdateAccounts(append: bool = False) -> None:
-    import json
-    jsonData = json.dumps([item.__dict__ for item in Accounts])
 
-    mode = 'r+' if append else 'w'
-    with open('accounts.json', mode) as outfile: outfile.write(jsonData)
 
 def RemoveAccounts() -> None:
     print("Clearing all saved accounts...")
-
-    import os
-    if os.stat("accounts.json").st_size == 0: return
-
-    open('accounts.json', 'w').close()
-    global Accounts
-    Accounts = []
-
-
-def RestoreAccounts() -> None:
-    print("Restoring accounts...")
-
-    import json
-    import os
-
-    if not os.path.isfile("accounts.json"): open('accounts.json', 'w').close()
-
-    if os.stat("accounts.json").st_size == 0: return
-    with open('accounts.json', 'r') as data: accounts = json.load(data)
-
-    global Accounts
-    for account in accounts:
-        loadedAccount = Account(account['name'],account['password'],account['email'],account['uuid'],account['salt'])
-        Accounts.append(loadedAccount)
-
-    print(f"Restored {len(Accounts)} account(s)...\n")
-
+    db.Conn.cursor().execute("TRUNCATE TABLE accounts")
 
 def IsUserSessionValid(uuid: str) -> bool:
-    found = next((x for x in Accounts if x.uuid == uuid), None) != None
-    return found
+    return db.UuidInUse(uuid)
 
 
-def ComputeSHA3hash(password: str, salt: str) -> str:
+def ComputeSHA3hash(password: str, salt: int) -> str:
     import hashlib
     result = hashlib.sha3_256()
-    result.update((password + salt).encode())
+    result.update((password + str(salt)).encode())
     return (result.hexdigest())
 
 

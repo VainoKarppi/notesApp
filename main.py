@@ -3,7 +3,7 @@ import datetime
 
 import lib.notes as notes
 import lib.accounts as accounts
-import lib.sqlite as sqlite
+import lib.sqlitedb as db
 
 
 
@@ -57,25 +57,19 @@ if __name__=='__main__':
     import os; os.system('cls' if os.name == 'nt' else 'clear')
     print("STARTING PROGRAM...\n")
     
-    sqlite.Init()
+    db.Init()
 
-    #accounts.RestoreAccounts()
-    #notes.RestoreNotes()
-    accounts.RemoveAccounts()
+    notes.RestoreNotes()
     
-    admin = None
+    if (db.EmailInUse("admin@mail.com") == False):
+        accounts.AddAccount("admin","admin","admin@mail.com")
 
-    if (len(accounts.Accounts) == 0):
-        admin = accounts.AddAccount("admin","admin","admin@mail.com")
-
-    if (admin is not None):
-        sqlite.InsertAccount(admin)
 
     print("Type 'help' to view commands!")
     loggedUser = None
     while 1==1:
         try:
-            #* ACCOUNT MODE
+            # ACCOUNT MODE
             if UiMode == 1:
                 command = input("\n[*ACCOUNT MODE*]: Enter command:\n> ").lower()
 
@@ -97,7 +91,6 @@ if __name__=='__main__':
                     username = input("Enter username or email:\n> ")
                     password = input("Enter password:\n> ")
                     loggedUser = accounts.Login(username,password)
-                    sqlite.LoadAccount(loggedUser.uuid)
                 
                 if (command == "logout"):
                     if (loggedUser is None): continue
@@ -220,5 +213,7 @@ if __name__=='__main__':
     #RemoveNotes()
 
     print("\nBYE! 👋\n")
+
+    db.Conn.close()
 
     import sys; sys.exit(0)
