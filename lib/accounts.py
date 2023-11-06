@@ -24,7 +24,7 @@ class Account:
 
 
 def Login(usernameOrEmail: str, password: str) -> Account:
-    result = db.Conn.cursor().execute("SELECT * FROM accounts WHERE name=:data COLLATE NOCASE OR email=:data COLLATE NOCASE", {"data": usernameOrEmail}).fetchone()
+    result = db.Cursor.execute("SELECT * FROM accounts WHERE name=:data COLLATE NOCASE OR email=:data COLLATE NOCASE", {"data": usernameOrEmail}).fetchone()
     if (result is None): raise ValueError(f"Invalid username or email! ({usernameOrEmail})")
 
     account = Account(result[1],result[4],result[3],result[0],result[2])
@@ -63,7 +63,7 @@ def AddAccount(name:str, password:str, email:str, admin:bool = False) -> Account
     if '@' in name: raise ValueError("Username cannot be email!")
     if '@' not in email: raise ValueError("Invalid Email!")
 
-    result = db.Conn.cursor().execute("SELECT * FROM accounts WHERE name=:name COLLATE NOCASE OR email=:email COLLATE NOCASE", {"name":name, "email":email}).fetchone()
+    result = db.Cursor.execute("SELECT * FROM accounts WHERE name=:name COLLATE NOCASE OR email=:email COLLATE NOCASE", {"name":name, "email":email}).fetchone()
     if (result is not None): raise ValueError("Email or Username already in use!")
     
     account = Account(name,password,email)
@@ -77,7 +77,7 @@ def AddAccount(name:str, password:str, email:str, admin:bool = False) -> Account
 
 def RemoveAccounts() -> None:
     print("Clearing all saved accounts...")
-    db.Conn.cursor().execute("TRUNCATE TABLE accounts")
+    db.Cursor.execute("TRUNCATE TABLE accounts")
 
 def IsUserSessionValid(uuid: str) -> bool:
     return db.UuidInUse(uuid)
