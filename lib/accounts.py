@@ -1,4 +1,5 @@
 import datetime
+import uuid
 import lib.sqlitedb as db
 
 #! ----------------------
@@ -6,10 +7,10 @@ import lib.sqlitedb as db
 #! ----------------------
 Accounts = []
 class Account:
-    def __init__(self, name:str, password:str, email:str, uuid:str = None, salt:int = None):
+    def __init__(self, name:str, password:str, email:str, uuid:uuid.UUID = None, salt:int = None):
         from uuid import uuid4
         from random import randint
-        self.uuid = str(uuid4()) if uuid is None else uuid
+        self.uuid = (uuid4()) if uuid is None else uuid
         self.name = name
         self.salt = (randint(1000000,9999999)) if salt is None else salt
         self.email = email

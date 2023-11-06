@@ -124,7 +124,7 @@ if __name__=='__main__':
                         newPassword = input("Enter NEW password:\n> ")
                         newPasswordHash = accounts.ComputeSHA3hash(newPassword,loggedUser.salt)
                         if (newPasswordHash == oldPasswordHash): raise ValueError("NEW Password cannot be same as old password!")
-                        
+
                         loggedUser.password = newPasswordHash
                         success = db.UpdateAccount(loggedUser)
 
