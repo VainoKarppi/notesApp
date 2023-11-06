@@ -62,7 +62,7 @@ if __name__=='__main__':
     notes.RestoreNotes()
     
     if (db.EmailInUse("admin@mail.com") == False):
-        accounts.AddAccount("admin","admin","admin@mail.com")
+        accounts.AddAccount("admin","admin","admin@mail.com",True)
 
 
     print("Type 'help' to view commands!")
@@ -101,7 +101,9 @@ if __name__=='__main__':
                     username = input("Enter username:\n> ")
                     password = input("Enter password:\n> ")
                     email = input("Enter email:\n> ")
-                    accounts.AddAccount(username,password,email)
+                    admin = input("Is admin: 1 = True, 0 = False")
+                    isAdmin = admin.lower() == "true" or admin == "1"
+                    accounts.AddAccount(username,password,email,isAdmin)
 
                 if (command == "removeaccount"):
                     uuid = input("Enter user email or uuid\n> ")

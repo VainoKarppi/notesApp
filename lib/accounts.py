@@ -14,6 +14,7 @@ class Account:
         self.salt = (randint(1000000,9999999)) if salt is None else salt
         self.email = email
         self.password = password if IsSHA3hash(password) else ComputeSHA3hash(password,self.salt)
+        self.admin:bool = False
         self.hidden = False
     
     def __str__(self):
@@ -26,6 +27,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     if (result is None): raise ValueError(f"Invalid username or email! ({usernameOrEmail})")
 
     account = Account(result[1],result[4],result[3],result[0],result[2])
+    account.admin = bool(result[5])
 
     #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
     hashedPassword = ComputeSHA3hash(password,account.salt)
@@ -45,7 +47,7 @@ def RemoveAccount(uuidOrEmail:str) -> None:
 
 
 # Returns create Account class
-def AddAccount(name:str, password:str, email:str) -> Account:
+def AddAccount(name:str, password:str, email:str, admin:bool = False) -> Account:
     print(f"Creating account... ({name}) - ({email})\n")
 
     if '@' in name: raise ValueError("Username cannot be email!")
@@ -55,6 +57,7 @@ def AddAccount(name:str, password:str, email:str) -> Account:
     if (result is not None): raise ValueError("Email or Username already in use!")
     
     account = Account(name,password,email)
+    account.admin = admin
     
     db.InsertAccount(account)
 
