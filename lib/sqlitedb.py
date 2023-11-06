@@ -15,10 +15,9 @@ Cursor = Conn.cursor()
 
 def Init():
     try:
-        cur = Conn.cursor()
 
         # Create accounts table
-        cur.execute("""CREATE TABLE IF NOT EXISTS accounts (     
+        Cursor.execute("""CREATE TABLE IF NOT EXISTS accounts (     
                     uuid GUID PRIMARY KEY NOT NULL,
                     name TEXT NOT NULL,
                     salt INTEGER NOT NULL,
@@ -29,7 +28,7 @@ def Init():
                 )""")
         
         # Create Notes Table
-        cur.execute("""CREATE TABLE IF NOT EXISTS notes (
+        Cursor.execute("""CREATE TABLE IF NOT EXISTS notes (
                     owner GUID NOT NULL,
                     subject TEXT NOT NULL,
                     text TEXT,
@@ -59,45 +58,44 @@ def UpdateAccount(account) -> bool:
         return True
     except:
         return False
+    
+
+def RemoveAccount(accountUUID:uuid.UUID):
+    Cursor.execute("DELETE FROM accounts WHERE uuid=:uuid", {"uuid": accountUUID})
     Conn.commit()
 
-def LoadAccount(accountUUID:str):
-    cur = Conn.cursor()
-    cur.execute("SELECT * FROM accounts WHERE uuid=:uuid", {"uuid": uuid.UUID(accountUUID)})
-    result = cur.fetchone()
+
+def LoadAccount(accountUUID:uuid.UUID):
+    Cursor.execute("SELECT * FROM accounts WHERE uuid=:uuid", {"uuid": accountUUID})
+    result = Cursor.fetchone()
     return result
 
+
 def LoadAllAccounts():
-    cur = Conn.cursor()
-    cur.execute("SELECT * FROM accounts")
-    result = cur.fetchall()
+    Cursor.execute("SELECT * FROM accounts")
+    result = Cursor.fetchall()
     return result
     
 
-def UuidInUse(accountUUID:str) -> bool:
-    cur = Conn.cursor()
-    cur.execute("SELECT name FROM accounts WHERE uuid=:uuid", {"uuid": uuid.UUID(accountUUID)})
-    result = cur.fetchone()
+def UuidInUse(accountUUID:uuid.UUID) -> bool:
+    result = Cursor.execute("SELECT hidden FROM accounts WHERE uuid=:uuid", {"uuid": accountUUID}).fetchone()
     return result is not None
 
+
 def EmailInUse(email:str) -> bool:
-    result = Conn.cursor().execute("SELECT name FROM accounts WHERE email=:email", {"email": email}).fetchone()
+    result = Cursor.execute("SELECT name FROM accounts WHERE email=:email", {"email": email}).fetchone()
     return (result is not None)
 
 
 # NOTES
 def InsertNote(note):
-    cur = Conn.cursor()
-    cur.execute("INSERT INTO notes (owner,subject,text,creationTimeUTC,hidden) VALUES (?,?,?,?,?)",(note.ownerUUID, note.subject, note.text, note.creationTimeUTC, note.hidden))
+    Cursor.execute("INSERT INTO notes (owner,subject,text,creationTimeUTC,hidden) VALUES (?,?,?,?,?)",(note.ownerUUID, note.subject, note.text, note.creationTimeUTC, note.hidden))
 
 def UpdateNote(note):
-    cur = Conn.cursor()
-    cur.execute("UPDATE notes SET subject = ?, text = ?, hidden = ?, WHERE owner = ? AND subject = ?",(note.subject, note.text, note.hidden, note.ownerUUID, note.subject))
+    Cursor.execute("UPDATE notes SET subject = ?, text = ?, hidden = ?, WHERE owner = ? AND subject = ?",(note.subject, note.text, note.hidden, note.ownerUUID, note.subject))
 
 def RemoveNote(note): # DONT USE! (Use update with hidden=true)
-    cur = Conn.cursor()
-    cur.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",(note.ownerUUID, note.subject))
+    Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",(note.ownerUUID, note.subject))
 
 def LoadNote(owner: str, subject: str):
-    cur = Conn.cursor()
-    cur.execute("SELECT * FROM notes WHERE owner = ? AND subject = ?",(owner, subject))
+    Cursor.execute("SELECT * FROM notes WHERE owner = ? AND subject = ?",(owner, subject))
