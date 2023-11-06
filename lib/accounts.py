@@ -39,11 +39,20 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     raise ValueError(f"Invalid username or password! ({usernameOrEmail})")
 
 # Returns True if successfully removed. False if not
-def RemoveAccount(uuidOrEmail:str) -> None:
-    print(f"Removing account... ({uuidOrEmail})")
-
-    result = db.Conn.cursor().execute("DELETE FROM accounts WHERE uuid=:data OR email=:data COLLATE NOCASE", {"data": uuidOrEmail}).fetchone()
-    print(result)
+def RemoveAccount(uuidOrEmail) -> bool:
+    try:
+        print(f"Removing account... ({uuidOrEmail})")
+        userUuid = None
+        if ('@' not in uuidOrEmail):
+            if (isinstance(uuidOrEmail, uuid.UUID)):
+                userUuid = uuidOrEmail
+            else:
+                userUuid = uuid.UUID(uuidOrEmail)
+            
+        db.Cursor.execute("DELETE FROM accounts WHERE uuid=:uuid OR email=:email COLLATE NOCASE", {"uuid":userUuid, "email":uuidOrEmail})
+        return True
+    except:
+        return False
 
 
 

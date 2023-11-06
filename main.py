@@ -107,8 +107,9 @@ if __name__=='__main__':
                     accounts.AddAccount(username,password,email,isAdmin)
 
                 if (command == "removeaccount"):
-                    uuid = input("Enter user email or uuid\n> ")
-                    accounts.RemoveAccount(uuid)
+                    if (loggedUser is not None): print(f"Current users uuid: {loggedUser.uuid}")
+                    data = input("Enter user email or uuid\n> ")
+                    accounts.RemoveAccount(data)
 
                 if (command == "viewaccount"):
                     if (loggedUser is None):
