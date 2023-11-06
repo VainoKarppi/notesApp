@@ -51,15 +51,14 @@ def InsertAccount(account):
     Cursor.execute("INSERT INTO accounts (uuid,name,salt,email,password,admin,hidden) VALUES (?,?,?,?,?,?,?)",(account.uuid, account.name, account.salt, account.email, account.password, account.admin, account.hidden))
     Conn.commit()
 
-def UpdateAccount(account):
-    cur = Conn.cursor()
-    cur.execute("UPDATE accounts SET name=:name, email=:email, password=:password, hidden=:hidden WHERE uuid=:uuid",
-                    {"name":account.name,"email":account.email,"password":account.password,"hidden":account.hidden,"uuid":uuid.UUID(account.uuid)})
-    Conn.commit()
-    
-def RemoveAccount(accountUUID:str):
-    cur = Conn.cursor()
-    cur.execute("DELETE FROM accounts WHERE uuid=:uuid", {"uuid": uuid.UUID(accountUUID)})
+def UpdateAccount(account) -> bool:
+    try:
+        Cursor.execute("UPDATE accounts SET name=:name, email=:email, password=:password, hidden=:hidden WHERE uuid=:uuid",
+            {"name":account.name,"email":account.email,"password":account.password,"hidden":account.hidden,"uuid":account.uuid})
+        Conn.commit()
+        return True
+    except:
+        return False
     Conn.commit()
 
 def LoadAccount(accountUUID:str):

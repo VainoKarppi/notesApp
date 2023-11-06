@@ -36,6 +36,7 @@ def CommandsHelp():
         print(f"Notes - (Enter Notes Mode)")
         print(f"Login - (Login to account)")
         print(f"Logout - (Logout from the current account)")
+        print(f"ChangePassword - (Updates current users password)")
         print(f"AddAccount - (Create Account)")
         print(f"RemoveAccount - (Remove Account)")
         print(f"ViewAccount - (Shows current account info)")
@@ -114,6 +115,26 @@ if __name__=='__main__':
                         print("Not logged in!")
                     else:
                         print(loggedUser)
+                
+                if (command == "changepassword"):
+                    if (loggedUser is None):
+                        print("Not logged in!")
+                    else:
+                        oldPasswordHash = loggedUser.password
+                        newPassword = input("Enter NEW password:\n> ")
+                        newPasswordHash = accounts.ComputeSHA3hash(newPassword,loggedUser.salt)
+                        if (newPasswordHash == oldPasswordHash): raise ValueError("NEW Password cannot be same as old password!")
+                        
+                        loggedUser.password = newPasswordHash
+                        success = db.UpdateAccount(loggedUser)
+
+                        # Restore old password if update was failed
+                        if (success == False): 
+                            loggedUser.password = oldPasswordHash
+                            continue
+                        
+                        print("Password updated succesfully!")
+
 
                 if (command == "showaccounts"):
                     index = 0
