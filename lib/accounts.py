@@ -5,7 +5,7 @@ import lib.sqlitedb as db
 #! ----------------------
 #! ACCOUNTS FUNCTIONS
 #! ----------------------
-Accounts = []
+
 class Account:
     def __init__(self, name:str, password:str, email:str, uuid:uuid.UUID = None, salt:int = None):
         from uuid import uuid4
@@ -19,7 +19,7 @@ class Account:
         self.hidden = False
     
     def __str__(self):
-        return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n")
+        return(f"\tuuid: {self.uuid}\n\tname: {self.name}\n\tpassword: {self.password}\n\temail: {self.email}\n\tsalt: {self.salt}\n\tadmin: {self.admin}")
 
 
 
