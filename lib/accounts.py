@@ -40,7 +40,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     raise ValueError(f"Invalid username or password! ({usernameOrEmail})")
 
 # Returns True if successfully removed. False if not
-def RemoveAccount(uuidOrEmail) -> None:
+def RemoveAccount(uuidOrEmail:str) -> None:
     userUuid = None
     if ('@' not in uuidOrEmail):
         if (isinstance(uuidOrEmail, uuid.UUID)):
@@ -52,6 +52,21 @@ def RemoveAccount(uuidOrEmail) -> None:
     db.Conn.commit()
 
 
+def GetAccount(uuidOrEmail:str) -> Account:
+    userUuid = None
+    if ('@' not in uuidOrEmail):
+        if (isinstance(uuidOrEmail, uuid.UUID)):
+            userUuid = uuidOrEmail
+        else:
+            userUuid = uuid.UUID(uuidOrEmail)
+        
+    result = db.Cursor.execute("SELECT * FROM accounts WHERE uuid=:uuid COLLATE NOCASE OR email=:email COLLATE NOCASE", {"uuid":userUuid, "email":uuidOrEmail}).fetchone()
+
+    account = Account(result[1],result[4],result[3],result[0],result[2])
+    account.admin = bool(result[5])
+    account.creationTimeUTC = datetime.strptime(result[6],'%Y-%m-%d %H:%M:%S.%f')
+
+    return account
 
 
 # Returns create Account class
