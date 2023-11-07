@@ -8,17 +8,10 @@ import json
 from uuid import UUID
 
 
-# FIX TO ALLOW DUMP JSON UUID ENCODE
-class UUIDEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID): return obj.hex
-        return json.JSONEncoder.default(self, obj)
-
 
 #! ----------------------
 #! NOTES FUNCTIONS
 #! ----------------------
-Notes = []
 class Note:
     def __init__(self, ownerUUID: uuid.UUID, subject: str, text: str, webPage: str = ""):
         self.ownerUUID = ownerUUID
@@ -48,11 +41,6 @@ def GetNoteFromDBResult(result:list) -> Note:
 
     return note
 
-def RemoveNote(user: accounts.Account, subject: str) -> None:
-    noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
-    if (noteToDelete is None): raise ValueError("No note found with this subject to be deleted!")
-
-    Notes.remove(noteToDelete)
 
 def GetNote(ownerUUID: uuid.UUID, subject: str) -> Note:
     noteData = db.GetNote(ownerUUID,subject)

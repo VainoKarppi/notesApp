@@ -39,7 +39,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
         
     raise ValueError(f"Invalid credientials! ({usernameOrEmail})")
 
-# Returns True if successfully removed. False if not
+
 def RemoveAccount(uuidOrEmail:str) -> None:
     userUuid = None
     if ('@' not in uuidOrEmail):
@@ -47,8 +47,11 @@ def RemoveAccount(uuidOrEmail:str) -> None:
             userUuid = uuidOrEmail
         else:
             userUuid = uuid.UUID(uuidOrEmail)
-        
-    db.Cursor.execute("DELETE FROM accounts WHERE uuid=:uuid OR email=:email COLLATE NOCASE", {"uuid":userUuid, "email":uuidOrEmail})
+    
+    if (userUuid is not None and db.UuidInUse(userUuid) == False): raise ValueError("UUID not found!")
+    
+    result = db.Cursor.execute("DELETE FROM accounts WHERE uuid=:uuid OR email=:email COLLATE NOCASE", {"uuid":userUuid, "email":uuidOrEmail})
+    if (result.rowcount == 0): raise Exception("Unable to remove account!")
     db.Conn.commit()
 
 

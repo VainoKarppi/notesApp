@@ -69,22 +69,21 @@ def Init():
 
 # ACCOUNTS
 def InsertAccount(account):
-    Cursor.execute("INSERT INTO accounts (uuid,name,salt,email,password,admin,creationtimeutc,hidden) VALUES (?,?,?,?,?,?,?,?)",
+    result = Cursor.execute("INSERT INTO accounts (uuid,name,salt,email,password,admin,creationtimeutc,hidden) VALUES (?,?,?,?,?,?,?,?)",
                    (account.uuid, account.name, account.salt, account.email, account.password, account.admin, str(account.creationTimeUTC) ,account.hidden))
+    if (result.rowcount == 0): raise Exception("Failed to insert account!")
     Conn.commit()
 
-def UpdateAccount(account) -> bool:
-    try:
-        Cursor.execute("UPDATE accounts SET name=:name, email=:email, password=:password, hidden=:hidden WHERE uuid=:uuid",
-            {"name":account.name,"email":account.email,"password":account.password,"hidden":account.hidden,"uuid":account.uuid})
-        Conn.commit()
-        return True
-    except:
-        return False
+def UpdateAccount(account):
+    result = Cursor.execute("UPDATE accounts SET name=:name, email=:email, password=:password, hidden=:hidden WHERE uuid=:uuid",
+        {"name":account.name,"email":account.email,"password":account.password,"hidden":account.hidden,"uuid":account.uuid})
+    if (result.rowcount == 0): raise Exception("Failed to update account!")
+    Conn.commit()
     
 
 def RemoveAccount(accountUUID:uuid.UUID):
-    Cursor.execute("DELETE FROM accounts WHERE uuid=:uuid", {"uuid": accountUUID})
+    result = Cursor.execute("DELETE FROM accounts WHERE uuid=:uuid", {"uuid": accountUUID})
+    if (result.rowcount == 0): raise Exception("No account found to be removed!")
     Conn.commit()
 
 
@@ -112,21 +111,20 @@ def EmailInUse(email:str) -> bool:
 
 # NOTES
 def InsertNote(note):
-    Cursor.execute("INSERT INTO notes (owner,subject,text,webpage,creationTimeUTC,hidden) VALUES (?,?,?,?,?,?)",
+    result = Cursor.execute("INSERT INTO notes (owner,subject,text,webpage,creationTimeUTC,hidden) VALUES (?,?,?,?,?,?)",
                    (note.ownerUUID, note.subject, note.text, note.webPage, str(note.creationTimeUTC), note.hidden))
+    if (result.rowcount == 0): raise Exception("Failed to insert note!")
     Conn.commit()
 
-def UpdateNote(note) -> bool:
-    try: 
-        Cursor.execute("UPDATE notes SET text=:text, hidden=:hidden WHERE owner=:owner AND subject=:subject COLLATE NOCASE",
-            {"text":note.text,"hidden":note.hidden,"owner":note.ownerUUID,"subject":note.subject})
-        Conn.commit()
-        return True
-    except:
-        return False
+def UpdateNote(note):
+    result = Cursor.execute("UPDATE notes SET text=:text, hidden=:hidden WHERE owner=:owner AND subject=:subject COLLATE NOCASE",
+        {"text":note.text,"hidden":note.hidden,"owner":note.ownerUUID,"subject":note.subject})
+    if (result.rowcount == 0): raise Exception("Failed to update note!")
+    Conn.commit()
 
 def RemoveNote(ownerUUID:uuid.UUID, subject: str): # DONT USE! (Use update with hidden=true)
-    Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[ownerUUID, subject])
+    result = Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[ownerUUID, subject])
+    if (result.rowcount == 0): raise Exception("No note found to be removed!")
     Conn.commit()
 
 def GetNote(ownerUUID:uuid.UUID, subject: str):

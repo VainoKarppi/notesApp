@@ -9,20 +9,6 @@ import lib.sqlitedb as db
 Debug = True
 
 
-#! --------------------
-#! OTHER FUNCTIONS
-#! --------------------
-
-# can be parsed from datetime.utcnow()
-def ParseStringToDate(dateString: str) -> datetime:
-    date = datetime.strptime(dateString, "%Y-%m-%d %H:%M:%S.%f")
-    return date
-
-
-
-
-
-
 LoggedUser:accounts.Account = None
 
 
@@ -47,7 +33,7 @@ def CommandsHelp():
             print(f"\n[ ADMIN COMMANDS ]")
             print(f"AddAccount - (Create Account)")
             print(f"ShowAccounts - (Show All Accounts)")
-            print(f"RemoveAccount - (Remove Account)")
+            print(f"RemoveOtherAccount - (Remove Someone Elses Account)")
 
     elif UiMode == 3:
         print(f"Help - (Show this help page)")
@@ -178,18 +164,23 @@ try:
                             oldPasswordHash = LoggedUser.password
                             newPassword = input("\nEnter NEW password:\n> ")
                             newPasswordHash = accounts.ComputeSHA3hash(newPassword,LoggedUser.salt)
-                            if (newPasswordHash == oldPasswordHash): raise ValueError("NEW Password cannot be same as old password!")
+                            if (newPasswordHash == oldPasswordHash): raise ValueError("New Password cannot be same as old password!")
 
                             LoggedUser.password = newPasswordHash
-                            success = db.UpdateAccount(LoggedUser)
+                            try:
+                                db.UpdateAccount(LoggedUser)
+                                print("Password updated succesfully!")
+                            except:
+                                LoggedUser.password = oldPasswordHash # Restore old password if update was failed
 
-                            # Restore old password if update was failed
-                            if (success == False): 
-                                LoggedUser.password = oldPasswordHash
-                                continue
-                            
-                            print("Password updated succesfully!")
-
+                    # Remove this account
+                    if (command == "removeaccount"):
+                        result = input("\nAre you sure you want to remove your account? (yes/no)\n> ")
+                        if (result.lower() == "true" or result.lower() == "yes" or result.lower() == "1"):
+                            accounts.RemoveAccount(LoggedUser.uuid)
+                            LoggedUser = None
+                            UiMode = 1
+                            print("Account removed succesfully!")
 
                     #* ADMIN COMMANDS
                     if (LoggedUser.admin):
@@ -214,24 +205,11 @@ try:
                                 print(f"ACCOUNT: ({index})")
                                 print(account)
 
-                        if (command == "removeaccount"):
-                            if (LoggedUser is not None): print(f"Current users uuid: {LoggedUser.uuid}")
+                        if (command == "removeotheraccount"):
                             data = input("\nEnter user email or uuid\n> ")
                             print(f"Removing account... ({data})")
                             accounts.RemoveAccount(data)
                             print("Account removed succesfully!")
-
-
-                    # Normal user removeaccounta
-                    else:
-                        if (command == "removeaccount"):
-                            result = input("\nAre you sure you want to remove your account? (yes/no)\n> ")
-                            if (result.lower() == "true" or result.lower() == "yes" or result.lower() == "1"):
-                                deleted = accounts.RemoveAccount(LoggedUser.uuid)
-                                if (deleted):
-                                    LoggedUser = None
-                                    UiMode = 1
-                                    print("Account removed succesfully!")
 
 
                 #* NOTE EDIT MODE
@@ -291,10 +269,9 @@ try:
                         if (note is None): print("No note was found with this subject name!"); continue
                         
                         note.text = input("\nEnter new text for the note\n> ")
-                        success = db.UpdateNote(note)
+                        db.UpdateNote(note)
 
-                        if(success): print("Note Updated Succesfully")
-                        else: print("Note Updated Failed!")
+                        print("Note Updated Succesfully")
 
 
                     if (command == "readnote"):
