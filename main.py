@@ -60,231 +60,8 @@ def CommandsHelp():
     
     print("===============================================\n")
     
-
-
-
-if __name__=='__main__':
-    os.system('cls' if os.name == 'nt' else 'clear')
-    
-    db.Init()
-
-    notes.RestoreNotes()
-    
-    if (db.EmailInUse("admin@mail.com") == False):
-        accounts.AddAccount("admin","admin","admin@mail.com",True)
-
-
-    print("Type 'help' to view commands!")
-    
-    while 1==1:
-        try:
-            #* GUEST MODE
-            if UiMode == 1:
-                command = input("\n[*GUEST MODE*]: Enter command:\n> ").lower()
-
-                if (command == "help"): CommandsHelp()
-                if (command == "exit"): break
-                        
-                if (command == "login"):
-                    if (LoggedUser is not None): print("Already logged in!"); continue
-
-                    username = input("Enter username or email:\n> ")
-                    password = input("Enter password:\n> ")
-                    LoggedUser = accounts.Login(username,password)
-                    if (LoggedUser is not None): 
-                        UiMode = 2
-                        os.system('cls' if os.name == 'nt' else 'clear')
-                
-
-
-
-            #* USER LOGGED IN MODE
-            elif UiMode == 2:
-                # Make sure session is valid and user is logged in
-                if ((LoggedUser is None) or (accounts.IsUserSessionValid(LoggedUser.uuid) == False)):
-                    os.system('cls' if os.name == 'nt' else 'clear')
-                    print("Logged out! (invalid session)")
-                    UiMode = 1
-                    continue
-                
-                command = input(("\n[*" + ("ADMIN" if LoggedUser.admin else "ACCOUNT") + " MODE*]: Enter command:\n> ")).lower()
-                
-                # Make sure session is STILL valid after input and user is logged in
-                if ((LoggedUser is None) or (accounts.IsUserSessionValid(LoggedUser.uuid) == False)):
-                    os.system('cls' if os.name == 'nt' else 'clear')
-                    print("Logged out! (invalid session)")
-                    UiMode = 1
-                    continue
-
-
-                if (command == "help"): CommandsHelp()
-                if (command == "exit"): break
-
-                # User Logout
-                if (command == "logout"):
-                    if (LoggedUser is None): UiMode = 1; continue
-                    UiMode = 1
-                    os.system('cls' if os.name == 'nt' else 'clear')
-                    print(f"User [{LoggedUser.name} - ({LoggedUser.uuid})] Logged Out!")
-                    LoggedUser = None
-                    continue
-
-                # Enter Notes Mode
-                if (command == "notes"):
-                    if (LoggedUser is None):
-                        print("You need to login first!")
-                    else:
-                        UiMode = 3
-                        print("Entered In Notes Mode!")
-                        os.system('cls' if os.name == 'nt' else 'clear')
-                
-                # View current user info
-                if (command == "viewaccount"):
-                    if (LoggedUser is None):
-                        print("Not logged in!")
-                    else:
-                        print(LoggedUser)
-                
-                # Change current user password
-                if (command == "changepassword"):
-                    if (LoggedUser is None):
-                        print("Not logged in!")
-                    else:
-                        oldPasswordHash = LoggedUser.password
-                        newPassword = input("Enter NEW password:\n> ")
-                        newPasswordHash = accounts.ComputeSHA3hash(newPassword,LoggedUser.salt)
-                        if (newPasswordHash == oldPasswordHash): raise ValueError("NEW Password cannot be same as old password!")
-
-                        LoggedUser.password = newPasswordHash
-                        success = db.UpdateAccount(LoggedUser)
-
-                        # Restore old password if update was failed
-                        if (success == False): 
-                            LoggedUser.password = oldPasswordHash
-                            continue
-                        
-                        print("Password updated succesfully!")
-
-
-                #* ADMIN COMMANDS
-                if (LoggedUser.admin):
-                    if (command == "addaccount"): 
-                        username = input("Enter username:\n> ")
-                        password = input("Enter password:\n> ")
-                        email = input("Enter email:\n> ")
-                        admin = input("Is admin (yes/no):\n> ")
-                        isAdmin = admin.lower() == "true" or admin == "1" or admin.lower() == "yes"
-                        newAccount = accounts.AddAccount(username,password,email,isAdmin)
-                        if (newAccount is not None): print("Account created succesfully!")
-                        else: print("Account creation failed!")
-
-                    if (command == "showaccounts"):
-                        index = 0
-                        for account in accounts.GetAllAccounts():
-                            index = index + 1
-                            print(f"ACCOUNT: ({index})")
-                            print(account)
-
-                    if (command == "removeaccount"):
-                        if (LoggedUser is not None): print(f"Current users uuid: {LoggedUser.uuid}")
-                        data = input("Enter user email or uuid\n> ")
-                        accounts.RemoveAccount(data)
-
-                # Normal user
-                else:
-                    if (command == "removeaccount"):
-                        result = input("Are you sure you want to remove your account? (yes/no)\n> ")
-                        if (result.lower() == "true" or result.lower() == "yes" or result.lower() == "1"):
-                            deleted = accounts.RemoveAccount(LoggedUser.uuid)
-                            if (deleted):
-                                LoggedUser = None
-                                UiMode = 1
-                                print("Account removed succesfully!")
-
-
-            #* NOTE EDIT MODE
-            elif UiMode == 3:
-                command = input("\n[*NOTES MODE*]: Enter command:\n> ").lower()
-
-                if ((LoggedUser is None) or (accounts.IsUserSessionValid(LoggedUser.uuid) == False)):
-                    os.system('cls' if os.name == 'nt' else 'clear')
-                    print("NOTES Mode Session Terminated! (invalid session)")
-                    UiMode = 1
-                    continue
-
-                if (command == "help"): CommandsHelp()
-                    
-                if (command == "shownotes"):
-                    thisUsersNotes = [x for x in notes.Notes if x.ownerUUID == LoggedUser.uuid]
-                    if (len(thisUsersNotes) == 0): print("No notes found for current user!")
-                    
-                    index = 0
-                    for note in thisUsersNotes:
-                        index = index + 1
-                        print(f"NOTE: ({index})")
-                        print(note)
-
-                if (command == "addnote"):
-                    subject = input("Enter subject name:\n> ")
-                    text = input("Enter text:\n> ")
-                    notes.AddNote(LoggedUser,subject,text)
-
-                if (command == "removenote"):
-                    subject = input("Enter subject name of the note you want to delete:\n> ")
-                    notes.RemoveNotes(LoggedUser,subject)
-
-                if (command == "editnote"):
-                    subject = input("Enter subject name to edit:\n> ")
-                    # Uses memory address reference for the list item
-                    note = next((x for x in notes.Notes if x.subject.lower() == subject.lower()), None)
-                    if (note is None): print("No note was found with this subject name!"); continue
-                    note.text = input("Enter new text for the note\n> ")
-                    notes.UpdateNotes()
-
-                if (command == "readnote"):
-                    subject = input("Enter subject name to read:\n> ")
-                    note = next((x for x in notes.Notes if x.subject.lower() == subject.lower()), None)
-                    if (note is None): print("No note was found with this subject name!"); continue
-                    print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
-
-                if (command == "searchnote"):
-                    searchMode = input("Enter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
-                    if (searchMode == "1"):
-                        subjectFilter = input("\nEnter subject filter:\n> ")
-                        notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and subjectFilter.lower() in x.subject.lower())]
-                        print(f"Found {len(notes)} note(s) with this subject filter!")
-                        for note in notes: print(note)
-
-                    #TODO add hours and minutes support
-                    elif (searchMode == "2"):
-                        startDateText = input("\nEnter start date for filter (dd/mm/yyyy):\n> ")
-                        startDate = datetime.datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
-
-                        endDateText = input("\nEnter end date for filter (dd/mm/yyyy) - (leave empty for today):\n> ")
-                        endDate = datetime.datetime.utcnow()
-                        if (len(endDateText) != 0):
-                            endDate = datetime.datetime(int(endDateText.split('/')[2]), int(endDateText.split('/')[1]), int(endDateText.split('/')[0]))
-                            
-                        notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and (startDate < ParseStringToDate(x.creationTimeUTC) < endDate))]
-                        print(f"Found {len(notes)} note(s) with these date filters!")
-                        for note in notes: print(note)
-
-                    elif (searchMode == "3"):
-                        textFilter = input("\nEnter text filter:\n> ")
-                        notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and textFilter.lower() in x.text.lower())]
-                        print(f"Found {len(notes)} note(s) with this subject filter!")
-                        for note in notes: print(note)
-
-                if (command == "exit"):
-                    os.system('cls' if os.name == 'nt' else 'clear')
-                    UiMode = 2
-
-        except Exception as e:
-            if hasattr(e, 'message'):
-                print(e.message)
-            else:
-                print(e)
-
+def Exit(code:int = 0):
+    print("\n\n")
     #! DEBUG COMMANDS
     #Reset accounts!
     #RemoveAccounts()
@@ -292,8 +69,254 @@ if __name__=='__main__':
     #Reset notes!
     #RemoveNotes()
 
+    print("Stopping database...")
+    if (db.ConnectionOpen()):
+        db.Cursor.close()
+        db.Conn.commit()
+        db.Conn.close()
+
     print("\nBYE! 👋\n")
+    import sys; sys.exit(code)
+    print("FINAL")
 
-    db.Conn.close()
 
-    import sys; sys.exit(0)
+
+try:
+    if __name__=='__main__':
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
+        db.Init()
+
+        print("Restoring notes...")
+        notes.RestoreNotes()
+        print(f"Restored {len(notes.Notes)} notes(s)...\n")
+        
+        if (db.EmailInUse("admin@mail.com") == False):
+            print("Creating Admin account: (username: admin | password: admin)")
+            accounts.AddAccount("admin","admin","admin@mail.com",True)
+
+
+        print("Type 'help' to view commands!")
+        
+        while 1==1:
+            try:
+                #* GUEST MODE
+                if UiMode == 1:
+                    command = input("\n[*GUEST MODE*]: Enter command:\n> ").lower()
+
+                    if (command == "help"): CommandsHelp()
+                    if (command == "exit"): break
+                            
+                    if (command == "login"):
+                        if (LoggedUser is not None): print("Already logged in!"); continue
+
+                        username = input("\nEnter username or email:\n> ")
+                        password = input("\nEnter password:\n> ")
+                        LoggedUser = accounts.Login(username,password)
+                        if (LoggedUser is not None): 
+                            UiMode = 2
+                            os.system('cls' if os.name == 'nt' else 'clear')
+                            print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
+                            continue        
+                    
+
+
+
+                #* USER LOGGED IN MODE
+                elif UiMode == 2:
+                    # Make sure session is valid and user is logged in
+                    if ((LoggedUser is None) or (accounts.IsUserSessionValid(LoggedUser.uuid) == False)):
+                        os.system('cls' if os.name == 'nt' else 'clear')
+                        print("Logged out! (invalid session)")
+                        UiMode = 1
+                        continue
+                    
+                    command = input(("\n[*" + ("ADMIN" if LoggedUser.admin else "ACCOUNT") + " MODE*]: Enter command:\n> ")).lower()
+                    
+                    # Make sure session is STILL valid after input and user is logged in
+                    if ((LoggedUser is None) or (accounts.IsUserSessionValid(LoggedUser.uuid) == False)):
+                        os.system('cls' if os.name == 'nt' else 'clear')
+                        print("Logged out! (invalid session)")
+                        UiMode = 1
+                        continue
+
+
+                    if (command == "help"): CommandsHelp()
+                    if (command == "exit"): break
+
+                    # User Logout
+                    if (command == "logout"):
+                        if (LoggedUser is None): UiMode = 1; continue
+                        UiMode = 1
+                        os.system('cls' if os.name == 'nt' else 'clear')
+                        print(f"User [{LoggedUser.name} - ({LoggedUser.uuid})] Logged Out!")
+                        LoggedUser = None
+                        continue
+
+                    # Enter Notes Mode
+                    if (command == "notes"):
+                        if (LoggedUser is None):
+                            print("You need to login first!")
+                        else:
+                            UiMode = 3
+                            print("Entered In Notes Mode!")
+                            os.system('cls' if os.name == 'nt' else 'clear')
+                    
+                    # View current user info
+                    if (command == "viewaccount"):
+                        if (LoggedUser is None):
+                            print("Not logged in!")
+                        else:
+                            print(LoggedUser)
+                    
+                    # Change current user password
+                    if (command == "changepassword"):
+                        if (LoggedUser is None):
+                            print("Not logged in!")
+                        else:
+                            oldPasswordHash = LoggedUser.password
+                            newPassword = input("\nEnter NEW password:\n> ")
+                            newPasswordHash = accounts.ComputeSHA3hash(newPassword,LoggedUser.salt)
+                            if (newPasswordHash == oldPasswordHash): raise ValueError("NEW Password cannot be same as old password!")
+
+                            LoggedUser.password = newPasswordHash
+                            success = db.UpdateAccount(LoggedUser)
+
+                            # Restore old password if update was failed
+                            if (success == False): 
+                                LoggedUser.password = oldPasswordHash
+                                continue
+                            
+                            print("Password updated succesfully!")
+
+
+                    #* ADMIN COMMANDS
+                    if (LoggedUser.admin):
+                        if (command == "addaccount"): 
+                            username = input("\nEnter username:\n> ")
+                            password = input("\nEnter password:\n> ")
+                            email = input("\nEnter email:\n> ")
+                            admin = input("\nIs admin (yes/no):\n> ")
+                            isAdmin = admin.lower() == "true" or admin == "1" or admin.lower() == "yes"
+                            print(f"Creating account... ({username}) - ({email}) - Admin:{isAdmin}\n")
+                            newAccount = accounts.AddAccount(username,password,email,isAdmin)
+                            if (newAccount is not None): print("Account created succesfully!")
+                            else: print("Account creation failed!")
+
+                        if (command == "showaccounts"):
+                            index = 0
+                            for account in accounts.GetAllAccounts():
+                                index = index + 1
+                                print(f"ACCOUNT: ({index})")
+                                print(account)
+
+                        if (command == "removeaccount"):
+                            if (LoggedUser is not None): print(f"Current users uuid: {LoggedUser.uuid}")
+                            data = input("\nEnter user email or uuid\n> ")
+                            print(f"Removing account... ({data})")
+                            accounts.RemoveAccount(data)
+
+                    # Normal user
+                    else:
+                        if (command == "removeaccount"):
+                            result = input("\nAre you sure you want to remove your account? (yes/no)\n> ")
+                            if (result.lower() == "true" or result.lower() == "yes" or result.lower() == "1"):
+                                deleted = accounts.RemoveAccount(LoggedUser.uuid)
+                                if (deleted):
+                                    LoggedUser = None
+                                    UiMode = 1
+                                    print("Account removed succesfully!")
+
+
+                #* NOTE EDIT MODE
+                elif UiMode == 3:
+                    command = input("\n[*NOTES MODE*]: Enter command:\n> ").lower()
+
+                    if ((LoggedUser is None) or (accounts.IsUserSessionValid(LoggedUser.uuid) == False)):
+                        os.system('cls' if os.name == 'nt' else 'clear')
+                        print("NOTES Mode Session Terminated! (invalid session)")
+                        UiMode = 1
+                        continue
+
+                    if (command == "help"): CommandsHelp()
+                        
+                    if (command == "shownotes"):
+                        thisUsersNotes = [x for x in notes.Notes if x.ownerUUID == LoggedUser.uuid]
+                        if (len(thisUsersNotes) == 0): print("No notes found for current user!")
+                        
+                        index = 0
+                        for note in thisUsersNotes:
+                            index = index + 1
+                            print(f"NOTE: ({index})")
+                            print(note)
+
+                    if (command == "addnote"):
+                        subject = input("\nEnter subject name:\n> ")
+                        text = input("\nEnter text:\n> ")
+                        print(f"Creating new note for user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: ({subject})")
+                        notes.AddNote(LoggedUser,subject,text)
+
+                    if (command == "removenote"):
+                        subject = input("\nEnter subject name of the note you want to delete:\n> ")
+                        print(f"Removing a note from user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: {subject}")
+                        notes.RemoveNotes(LoggedUser,subject)
+
+                    if (command == "editnote"):
+                        subject = input("\nEnter subject name to edit:\n> ")
+                        # Uses memory address reference for the list item
+                        note = next((x for x in notes.Notes if x.subject.lower() == subject.lower()), None)
+                        if (note is None): print("No note was found with this subject name!"); continue
+                        note.text = input("\nEnter new text for the note\n> ")
+                        notes.UpdateNotes()
+
+                    if (command == "readnote"):
+                        subject = input("\nEnter subject name to read:\n> ")
+                        note = next((x for x in notes.Notes if x.subject.lower() == subject.lower()), None)
+                        if (note is None): print("No note was found with this subject name!"); continue
+                        print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
+
+                    if (command == "searchnote"):
+                        searchMode = input("\nEnter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
+                        if (searchMode == "1"):
+                            subjectFilter = input("\nEnter subject filter:\n> ")
+                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and subjectFilter.lower() in x.subject.lower())]
+                            print(f"Found {len(notes)} note(s) with this subject filter!")
+                            for note in notes: print(note)
+
+                        #TODO add hours and minutes support
+                        elif (searchMode == "2"):
+                            startDateText = input("\nEnter start date for filter (dd/mm/yyyy):\n> ")
+                            startDate = datetime.datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
+
+                            endDateText = input("\nEnter end date for filter (dd/mm/yyyy) - (leave empty for today):\n> ")
+                            endDate = datetime.datetime.utcnow()
+                            if (len(endDateText) != 0):
+                                endDate = datetime.datetime(int(endDateText.split('/')[2]), int(endDateText.split('/')[1]), int(endDateText.split('/')[0]))
+                                
+                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and (startDate < ParseStringToDate(x.creationTimeUTC) < endDate))]
+                            print(f"Found {len(notes)} note(s) with these date filters!")
+                            for note in notes: print(note)
+
+                        elif (searchMode == "3"):
+                            textFilter = input("\nEnter text filter:\n> ")
+                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and textFilter.lower() in x.text.lower())]
+                            print(f"Found {len(notes)} note(s) with this subject filter!")
+                            for note in notes: print(note)
+
+                    if (command == "exit"):
+                        os.system('cls' if os.name == 'nt' else 'clear')
+                        UiMode = 2
+
+
+            except Exception as e:
+                    if hasattr(e, 'message'):
+                        print(e.message)
+                    else:
+                        print(e)
+
+
+# CTRL + C was pressed (KeyboardInterrupt)
+except:
+    Exit(0)
+
+Exit(0)
