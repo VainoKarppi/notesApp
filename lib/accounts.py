@@ -73,7 +73,16 @@ def AddAccount(name:str, password:str, email:str, admin:bool = False) -> Account
 
     return account
 
+def GetAllAccounts() -> list:
+    accounts = []
+    results = db.Cursor.execute("SELECT * FROM accounts WHERE hidden=:hidden", {"hidden":0}).fetchall()
 
+    for result in results:
+        account = Account(result[1],result[4],result[3],result[0],result[2])
+        account.admin = bool(result[5])
+        accounts.append(account)
+
+    return accounts
 
 def RemoveAccounts() -> None:
     print("Clearing all saved accounts...")

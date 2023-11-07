@@ -179,7 +179,7 @@ if __name__=='__main__':
 
                     if (command == "showaccounts"):
                         index = 0
-                    for account in accounts.Accounts:
+                        for account in accounts.GetAllAccounts():
                             index = index + 1
                             print(f"ACCOUNT: ({index})")
                             print(account)
