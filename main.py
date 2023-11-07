@@ -5,6 +5,7 @@ import os
 import lib.notes as notes
 import lib.accounts as accounts
 import lib.sqlitedb as db
+import lib.restserver as restserver
 
 Debug = True
 
@@ -56,9 +57,12 @@ def Exit(code:int = 0):
 
     #Reset notes!
     #RemoveAllNotes()
+    print("Stopping REST server...")
+    restserver.StopServer()
 
-    print("Stopping database...")
+
     if (db.ConnectionOpen()):
+        print("Stopping database...")
         db.Cursor.close()
         db.Conn.commit()
         db.Conn.close()
@@ -76,6 +80,7 @@ try:
         #db.Conn.execute("DROP TABLE IF EXISTS notes")
         
         db.Init()
+        restserver.StartServer(8000)
 
         
         if (db.EmailInUse("admin@mail.com") == False):
