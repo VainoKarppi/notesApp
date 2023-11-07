@@ -41,9 +41,9 @@ def AddNote(user: accounts.Account, subject: str, text: str) -> bool:
 
     try:
         UpdateNotes(True)
-    except Exception as e:
+    except:
         Notes.remove(newNote)
-        raise e
+        pass
 
 
 def UpdateNotes(append: bool = False) -> None:
