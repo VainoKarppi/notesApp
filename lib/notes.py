@@ -1,5 +1,6 @@
 import datetime
 import lib.accounts as accounts
+import lib.sqlitedb as db
 import uuid
 
 import os
@@ -23,7 +24,7 @@ class Note:
         self.ownerUUID = ownerUUID
         self.subject = subject
         self.text = text
-        self.creationTimeUTC = str(datetime.datetime.utcnow())
+        self.creationTimeUTC = datetime.datetime.utcnow()
         self.hidden = False
 
     def __str__(self):
@@ -46,7 +47,7 @@ def AddNote(user: accounts.Account, subject: str, text: str) -> bool:
 
 def UpdateNotes(append: bool = False) -> None:
 
-    jsonData = json.dumps([item.__dict__ for item in Notes], cls=UUIDEncoder, indent=4)
+    jsonData = json.dumps([item.__dict__ for item in Notes], cls=UUIDEncoder, indent=4,default=str)
 
     mode = 'r+' if append else 'w'
     with open('notes.json', mode) as outfile: outfile.write(jsonData)
