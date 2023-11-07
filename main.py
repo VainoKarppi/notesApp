@@ -247,14 +247,14 @@ try:
                     if (command == "help"): CommandsHelp()
                         
                     if (command == "shownotes"):
-                        thisUsersNotes = [x for x in notes.Notes if x.ownerUUID == LoggedUser.uuid and x.hidden == False]
-                        if (len(thisUsersNotes) == 0): print("No notes found for current user!")
-                        
+                        allNotes = db.LoadAllUserNotes(LoggedUser.uuid)
+                        if (len(allNotes) == 0): print("No notes found for current user!")
                         index = 0
-                        for note in thisUsersNotes:
+                        for note in allNotes:
                             index = index + 1
                             print(f"NOTE: ({index})")
-                            print(note)
+                            print(f"\townerUUID: {note[0]}\n\tsubject: {note[1]}\n\ttext: {note[2]}\n\twebPage: {note[3]}\n\tcreationTimeUTC: {note[4]}\n")
+
 
                     if (command == "addnote"):
                         subject = input("\nEnter subject name:\n> ")
@@ -267,7 +267,8 @@ try:
                     if (command == "removenote"):
                         subject = input("\nEnter subject name of the note you want to delete:\n> ")
                         print(f"Removing a note from user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: {subject}")
-                        notes.RemoveNote(LoggedUser,subject)
+                        db.RemoveNote(LoggedUser.uuid,subject)
+                        print("Note removed succesfully!")
                     
                     if(command == "removeallnotes"):
                         user = LoggedUser

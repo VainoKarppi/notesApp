@@ -20,6 +20,7 @@ sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 sqlite3.register_converter('datetime', convert_datetime)
 
+# sqlite3.PARSE_DECLTYPES breaks the ability to use DATE. however it adds the ability to read UUID's!
 Conn = sqlite3.connect("notesapp.db", detect_types=sqlite3.PARSE_DECLTYPES)
 Cursor = Conn.cursor()
 
@@ -28,7 +29,7 @@ def ConnectionOpen():
     try:
         Conn.cursor()
         return True
-    except Exception as ex:
+    except:
         return False
 
 
@@ -53,7 +54,7 @@ def Init():
                     subject TEXT NOT NULL,
                     text TEXT NOT NULL,
                     webpage TEXT NOT NULL,
-                    creationTimeUTC DATE NOT NULL,
+                    creationTimeUTC INTEGER NOT NULL,
                     hidden INTEGER NOT NULL
                 )""")
         
@@ -114,15 +115,22 @@ def InsertNote(note):
     Cursor.execute("INSERT INTO notes (owner,subject,text,webpage,creationTimeUTC,hidden) VALUES (?,?,?,?,?,?)",
                    (note.ownerUUID, note.subject, note.text, note.webPage, str(note.creationTimeUTC), note.hidden))
     Conn.commit()
-    print("NOTE ADDED")
 
 def UpdateNote(note):
     Cursor.execute("UPDATE notes SET subject = ?, text = ?, hidden = ?, WHERE owner = ? AND subject = ?",(note.subject, note.text, note.hidden, note.ownerUUID, note.subject))
 
-def RemoveNote(note): # DONT USE! (Use update with hidden=true)
-    Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[note.ownerUUID, note.subject])
+def RemoveNote(ownerUUID:uuid.UUID, subject: str): # DONT USE! (Use update with hidden=true)
+    Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[ownerUUID, subject])
     Conn.commit()
 
 def GetNote(ownerUUID:uuid.UUID, subject: str):
     result = Cursor.execute("SELECT * FROM notes WHERE owner = ? AND subject = ? COLLATE NOCASE",[ownerUUID, subject]).fetchone()
+    return result
+
+def LoadAllUserNotes(ownerUUID:uuid.UUID):
+    result = Cursor.execute("SELECT * FROM notes WHERE owner=:owner", {"owner": ownerUUID}).fetchall()
+    return result
+
+def LoadAllNotes():
+    result = Cursor.execute("SELECT * FROM notes")
     return result
