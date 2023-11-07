@@ -32,7 +32,7 @@ LoggedUser:accounts.Account = None
 #! --------------------
 UiMode = 1
 def CommandsHelp():
-    print("\n==========| HELP COMMANDS |==========")
+    print("\n===============| HELP COMMANDS |===============")
     if UiMode == 1:
         print(f"Help  - (Show this help page)")
         print(f"Login - (Login to account)")    
@@ -58,8 +58,7 @@ def CommandsHelp():
         print(f"SearchNote - (Search for a Note)")
         print(f"Exit - (Return to Account Mode)")
     
-    
-    print("=====================================\n")
+    print("===============================================\n")
     
 
 
@@ -173,9 +172,11 @@ if __name__=='__main__':
                         username = input("Enter username:\n> ")
                         password = input("Enter password:\n> ")
                         email = input("Enter email:\n> ")
-                        admin = input("Is admin: 1 = True, 0 = False")
-                        isAdmin = admin.lower() == "true" or admin == "1"
-                        accounts.AddAccount(username,password,email,isAdmin)
+                        admin = input("Is admin (yes/no):\n> ")
+                        isAdmin = admin.lower() == "true" or admin == "1" or admin.lower() == "yes"
+                        newAccount = accounts.AddAccount(username,password,email,isAdmin)
+                        if (newAccount is not None): print("Account created succesfully!")
+                        else: print("Account creation failed!")
 
                     if (command == "showaccounts"):
                         index = 0
@@ -276,7 +277,7 @@ if __name__=='__main__':
 
                 if (command == "exit"):
                     os.system('cls' if os.name == 'nt' else 'clear')
-                    UiMode = 1
+                    UiMode = 2
 
         except Exception as e:
             if hasattr(e, 'message'):
