@@ -13,6 +13,15 @@ sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 Conn = sqlite3.connect("notes.db", detect_types=sqlite3.PARSE_DECLTYPES)
 Cursor = Conn.cursor()
 
+
+def ConnectionOpen():
+    try:
+        Conn.cursor()
+        return True
+    except Exception as ex:
+        return False
+
+
 def Init():
     try:
 
