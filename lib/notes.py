@@ -54,6 +54,10 @@ def RemoveNote(user: accounts.Account, subject: str) -> None:
 
     Notes.remove(noteToDelete)
 
+def GetNote(ownerUUID: uuid.UUID, subject: str) -> Note:
+    noteData = db.GetNote(ownerUUID,subject)
+    note = GetNoteFromDBResult(noteData)
+    return note
 
 def RemoveAllNotes(user: accounts.Account = None) -> None:
     if os.stat("notes.json").st_size == 0: return

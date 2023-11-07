@@ -283,11 +283,14 @@ try:
 
                     if (command == "editnote"):
                         subject = input("\nEnter subject name to edit:\n> ")
-                        # Uses memory address reference for the list item
-                        note = next((x for x in notes.Notes if x.subject.lower() == subject.lower()), None)
+                        note = notes.GetNote(LoggedUser.uuid,subject)
+
                         if (note is None): print("No note was found with this subject name!"); continue
                         note.text = input("\nEnter new text for the note\n> ")
-                        notes.UpdateNotes()
+                        success = db.UpdateNote(note)
+                        if(success): print("Note Updated Succesfully")
+                        else: print("Note Updated Failed!")
+
 
                     if (command == "readnote"):
                         subject = input("\nEnter subject name to read:\n> ")

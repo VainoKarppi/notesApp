@@ -116,8 +116,14 @@ def InsertNote(note):
                    (note.ownerUUID, note.subject, note.text, note.webPage, str(note.creationTimeUTC), note.hidden))
     Conn.commit()
 
-def UpdateNote(note):
-    Cursor.execute("UPDATE notes SET subject = ?, text = ?, hidden = ?, WHERE owner = ? AND subject = ?",(note.subject, note.text, note.hidden, note.ownerUUID, note.subject))
+def UpdateNote(note) -> bool:
+    try: 
+        Cursor.execute("UPDATE notes SET text=:text, hidden=:hidden WHERE owner=:owner AND subject=:subject COLLATE NOCASE",
+            {"text":note.text,"hidden":note.hidden,"owner":note.ownerUUID,"subject":note.subject})
+        Conn.commit()
+        return True
+    except:
+        return False
 
 def RemoveNote(ownerUUID:uuid.UUID, subject: str): # DONT USE! (Use update with hidden=true)
     Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[ownerUUID, subject])
