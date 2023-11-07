@@ -64,10 +64,10 @@ def Exit(code:int = 0):
     print("\n\n")
     #! DEBUG COMMANDS
     #Reset accounts!
-    #RemoveAccounts()
+    #RemoveAllAccounts()
 
     #Reset notes!
-    #RemoveNotes()
+    #RemoveAllNotes()
 
     print("Stopping database...")
     if (db.ConnectionOpen()):
