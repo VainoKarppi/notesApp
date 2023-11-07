@@ -59,14 +59,5 @@ def GetNote(ownerUUID: uuid.UUID, subject: str) -> Note:
     note = GetNoteFromDBResult(noteData)
     return note
 
-def RemoveAllNotes(user: accounts.Account = None) -> None:
-    if os.stat("notes.json").st_size == 0: return
 
-    # Remove notes from this sepcific user only!
-    global Notes
-    if (user is not None):
-        Notes = [x for x in Notes if x.ownerUUID != user.uuid]
-    else:
-        open('notes.json', 'w').close()
-        Notes = []
 

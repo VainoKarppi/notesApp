@@ -140,3 +140,7 @@ def LoadAllUserNotes(ownerUUID:uuid.UUID):
 def LoadAllNotes():
     result = Cursor.execute("SELECT * FROM notes")
     return result
+
+def RemoveAllUserNotes(ownerUUID: uuid.UUID) -> None:
+    Cursor.execute("DELETE FROM notes WHERE owner = ?",[ownerUUID])
+    Conn.commit()

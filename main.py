@@ -279,7 +279,8 @@ try:
                             print(f"Removing all notes from user: {user.name}")
                         else:
                             print(f"Removing all notes from user: {data}")
-                        notes.RemoveAllNotes(user)
+
+                        db.RemoveAllUserNotes(user.uuid)
 
                     if (command == "editnote"):
                         subject = input("\nEnter subject name to edit:\n> ")
@@ -288,7 +289,7 @@ try:
                         
                         note.text = input("\nEnter new text for the note\n> ")
                         success = db.UpdateNote(note)
-                        
+
                         if(success): print("Note Updated Succesfully")
                         else: print("Note Updated Failed!")
 
