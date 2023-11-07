@@ -33,7 +33,6 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
     hashedPassword = ComputeSHA3hash(password,account.salt)
     if hashedPassword == account.password:
-        print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
         return account
         
     raise ValueError(f"Invalid username or password! ({usernameOrEmail})")
@@ -41,7 +40,6 @@ def Login(usernameOrEmail: str, password: str) -> Account:
 # Returns True if successfully removed. False if not
 def RemoveAccount(uuidOrEmail) -> bool:
     try:
-        print(f"Removing account... ({uuidOrEmail})")
         userUuid = None
         if ('@' not in uuidOrEmail):
             if (isinstance(uuidOrEmail, uuid.UUID)):
@@ -58,8 +56,6 @@ def RemoveAccount(uuidOrEmail) -> bool:
 
 # Returns create Account class
 def AddAccount(name:str, password:str, email:str, admin:bool = False) -> Account:
-    print(f"Creating account... ({name}) - ({email}) - Admin:{admin}\n")
-
     if '@' in name: raise ValueError("Username cannot be email!")
     if '@' not in email: raise ValueError("Invalid Email!")
 
@@ -85,7 +81,6 @@ def GetAllAccounts() -> list:
     return accounts
 
 def RemoveAccounts() -> None:
-    print("Clearing all saved accounts...")
     db.Cursor.execute("TRUNCATE TABLE accounts")
 
 def IsUserSessionValid(uuid: str) -> bool:

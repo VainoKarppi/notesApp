@@ -31,8 +31,6 @@ class Note:
 
 
 def AddNote(user: accounts.Account, subject: str, text: str) -> bool:
-    print(f"Creating new note for user: [({user.name}) - ({user.uuid})] with subject: ({subject})")
-
     subjectInUse = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
     if (subjectInUse): raise ValueError("Subject name already in use!")
 
@@ -56,7 +54,6 @@ def UpdateNotes(append: bool = False) -> None:
 
 
 def RemoveNote(user: accounts.Account, subject: str) -> None:
-    print(f"Removing a note from user: [({user.name}) - ({user.uuid})] with subject: {subject}")
     noteToDelete = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
     if (noteToDelete is None): raise ValueError("No note found with this subject to be deleted!")
 
@@ -65,8 +62,6 @@ def RemoveNote(user: accounts.Account, subject: str) -> None:
 
 
 def RemoveNotes() -> None:
-    print("Clearing all saved notes...")
-
     if os.stat("notes.json").st_size == 0: return
 
     open('notes.json', 'w').close()
@@ -75,7 +70,6 @@ def RemoveNotes() -> None:
 
 
 def RestoreNotes() -> None:
-    print("Restoring notes...")
 
     if not os.path.isfile("notes.json"): open('notes.json', 'w').close()
 
@@ -88,5 +82,3 @@ def RestoreNotes() -> None:
         loadedNote.creationTimeUTC = note['creationTimeUTC']
 
         Notes.append(loadedNote)
-
-    print(f"Restored {len(Notes)} notes(s)...\n")
