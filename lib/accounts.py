@@ -30,7 +30,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
 
     account = Account(result[1],result[4],result[3],result[0],result[2])
     account.admin = bool(result[5])
-    account.creationTimeUTC = datetime.strptime(result[6],date_format)
+    account.creationTimeUTC = datetime.strptime(result[6],'%Y-%m-%d %H:%M:%S.%f')
 
     #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
     hashedPassword = ComputeSHA3hash(password,account.salt)
