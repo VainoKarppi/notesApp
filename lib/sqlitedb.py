@@ -144,3 +144,7 @@ def LoadAllNotes():
 def RemoveAllUserNotes(ownerUUID: uuid.UUID) -> None:
     Cursor.execute("DELETE FROM notes WHERE owner = ?",[ownerUUID])
     Conn.commit()
+
+def FindNote(ownerUUID: uuid.UUID, what: str, type:str):
+    data = Cursor.execute("SELECT * FROM notes WHERE owner = ? AND "+type+" LIKE ?",[ownerUUID,('%' + what + '%')]).fetchall()
+    return data

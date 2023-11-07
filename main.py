@@ -1,21 +1,21 @@
 
-import datetime
+from datetime import datetime
 import os;
 
 import lib.notes as notes
 import lib.accounts as accounts
 import lib.sqlitedb as db
 
-Debug = False
+Debug = True
 
 
 #! --------------------
 #! OTHER FUNCTIONS
 #! --------------------
 
-# can be parsed from datetime.datetime.utcnow()
+# can be parsed from datetime.utcnow()
 def ParseStringToDate(dateString: str) -> datetime:
-    date = datetime.datetime.strptime(dateString, "%Y-%m-%d %H:%M:%S.%f")
+    date = datetime.strptime(dateString, "%Y-%m-%d %H:%M:%S.%f")
     return date
 
 
@@ -85,6 +85,9 @@ def Exit(code:int = 0):
 try:
     if __name__=='__main__':
         os.system('cls' if os.name == 'nt' else 'clear')
+        
+        #db.Conn.execute("DROP TABLE IF EXISTS accounts")
+        #db.Conn.execute("DROP TABLE IF EXISTS notes")
         
         db.Init()
 
@@ -304,29 +307,39 @@ try:
                         searchMode = input("\nEnter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
                         if (searchMode == "1"):
                             subjectFilter = input("\nEnter subject filter:\n> ")
-                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and subjectFilter.lower() in x.subject.lower() and x.hidden == False)]
-                            print(f"Found {len(notes)} note(s) with this subject filter!")
-                            for note in notes: print(note)
+                            foundNotes = db.FindNote(LoggedUser.uuid,subjectFilter,"subject")
+                            print(f"Found {len(foundNotes)} note(s) with this subject filter!")
+                            for noteData in foundNotes:
+                                note = notes.GetNoteFromDBResult(noteData)
+                                if (note is not None): print(note)
 
                         #TODO add hours and minutes support
                         elif (searchMode == "2"):
-                            startDateText = input("\nEnter start date for filter (dd/mm/yyyy):\n> ")
-                            startDate = datetime.datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
-
-                            endDateText = input("\nEnter end date for filter (dd/mm/yyyy) - (leave empty for today):\n> ")
-                            endDate = datetime.datetime.utcnow()
-                            if (len(endDateText) != 0):
-                                endDate = datetime.datetime(int(endDateText.split('/')[2]), int(endDateText.split('/')[1]), int(endDateText.split('/')[0]))
+                            allNotes = []
+                            foundNotes = db.LoadAllUserNotes(LoggedUser.uuid)
+                            for noteData in foundNotes:
+                                note = notes.GetNoteFromDBResult(noteData)
+                                if (note is not None): allNotes.append(note)
                                 
-                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and (startDate < ParseStringToDate(x.creationTimeUTC) < endDate))]
-                            print(f"Found {len(notes)} note(s) with these date filters!")
-                            for note in notes: print(note)
+                            startDateText = input("\nEnter start date for filter in UTC (dd/mm/yyyy):\n> ")
+                            startDate = datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
+
+                            endDateText = input("\nEnter end date for filter in UTC (dd/mm/yyyy) - (leave empty for today):\n> ")
+                            endDate = datetime.utcnow()
+                            if (len(endDateText) != 0):
+                                endDate = datetime(int(endDateText.split('/')[2]), int(endDateText.split('/')[1]), int(endDateText.split('/')[0]))
+                                
+                            foundNotes = [x for x in allNotes if (startDate < x.creationTimeUTC < endDate)]
+                            print(f"Found {len(foundNotes)} note(s) with these date filters!")
+                            for note in foundNotes: print(note)
 
                         elif (searchMode == "3"):
                             textFilter = input("\nEnter text filter:\n> ")
-                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and textFilter.lower() in x.text.lower())]
-                            print(f"Found {len(notes)} note(s) with this subject filter!")
-                            for note in notes: print(note)
+                            foundNotes = db.FindNote(LoggedUser.uuid,textFilter,"text")
+                            print(f"Found {len(foundNotes)} note(s) with this text filter!")
+                            for noteData in foundNotes:
+                                note = notes.GetNoteFromDBResult(noteData)
+                                if (note is not None): print(note)
 
                     if (command == "exit"):
                         os.system('cls' if os.name == 'nt' else 'clear')
