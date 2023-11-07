@@ -6,7 +6,7 @@ import lib.notes as notes
 import lib.accounts as accounts
 import lib.sqlitedb as db
 
-
+Debug = True
 
 
 #! --------------------
@@ -42,10 +42,10 @@ def CommandsHelp():
         print(f"Logout - (Logout from the current account)")
         print(f"ChangePassword - (Updates current users password)")
         print(f"ViewAccount - (Shows current account info)")
+        print(f"RemoveAccount - (Remove Account)")
         if LoggedUser is not None and LoggedUser.admin:
             print(f"\n[ ADMIN COMMANDS ]")
             print(f"AddAccount - (Create Account)")
-            print(f"RemoveAccount - (Remove Account)")
             print(f"ShowAccounts - (Show All Accounts)")
 
     elif UiMode == 3:
@@ -89,7 +89,7 @@ try:
 
         print("Restoring notes...")
         notes.RestoreNotes()
-        print(f"Restored {len(notes.Notes)} notes(s)...\n")
+        print(f"Restored {len([x for x in notes.Notes if (x.hidden == False)])} notes(s)...\n")
         
         if (db.EmailInUse("admin@mail.com") == False):
             print("Creating Admin account: (username: admin | password: admin)")
@@ -116,7 +116,7 @@ try:
                         if (LoggedUser is not None): 
                             UiMode = 2
                             os.system('cls' if os.name == 'nt' else 'clear')
-                            print(f"Account: [({account.name}) | ({account.uuid})] Logged in!")   
+                            print(f"Account: [({username}) | ({LoggedUser.uuid})] Logged in!")   
                             continue        
                     
 
@@ -216,6 +216,7 @@ try:
                             print(f"Removing account... ({data})")
                             accounts.RemoveAccount(data)
 
+
                     # Normal user
                     else:
                         if (command == "removeaccount"):
@@ -309,6 +310,10 @@ try:
 
 
             except Exception as e:
+                    if (Debug):
+                        import traceback
+                        traceback.print_exc()
+
                     if hasattr(e, 'message'):
                         print(e.message)
                     else:
@@ -316,7 +321,11 @@ try:
 
 
 # CTRL + C was pressed (KeyboardInterrupt)
-except:
+except Exception as e:
+    if (Debug):
+        import traceback
+        traceback.print_exc()
+
     Exit(0)
 
 Exit(0)
