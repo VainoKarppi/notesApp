@@ -26,7 +26,7 @@ class Account:
 
 def Login(usernameOrEmail: str, password: str) -> Account:
     result = db.Cursor.execute("SELECT * FROM accounts WHERE name=:data COLLATE NOCASE OR email=:data COLLATE NOCASE", {"data": usernameOrEmail}).fetchone()
-    if (result is None): raise ValueError(f"Invalid username or email! ({usernameOrEmail})")
+    if (result is None): raise (f"Invalid credientials! ({usernameOrEmail})")
 
     account = Account(result[1],result[4],result[3],result[0],result[2])
     account.admin = bool(result[5])
@@ -37,7 +37,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
     if hashedPassword == account.password:
         return account
         
-    raise ValueError(f"Invalid username or password! ({usernameOrEmail})")
+    raise ValueError(f"Invalid credientials! ({usernameOrEmail})")
 
 # Returns True if successfully removed. False if not
 def RemoveAccount(uuidOrEmail:str) -> None:
@@ -53,7 +53,7 @@ def RemoveAccount(uuidOrEmail:str) -> None:
 
 
 def GetAccount(uuidOrEmail:str) -> Account:
-    userUuid = None
+    userUuid:uuid.UUID = None
     if ('@' not in uuidOrEmail):
         if (isinstance(uuidOrEmail, uuid.UUID)):
             userUuid = uuidOrEmail
@@ -61,7 +61,8 @@ def GetAccount(uuidOrEmail:str) -> Account:
             userUuid = uuid.UUID(uuidOrEmail)
         
     result = db.Cursor.execute("SELECT * FROM accounts WHERE uuid=:uuid COLLATE NOCASE OR email=:email COLLATE NOCASE", {"uuid":userUuid, "email":uuidOrEmail}).fetchone()
-
+    if (result is None): return None
+    
     account = Account(result[1],result[4],result[3],result[0],result[2])
     account.admin = bool(result[5])
     account.creationTimeUTC = datetime.strptime(result[6],'%Y-%m-%d %H:%M:%S.%f')

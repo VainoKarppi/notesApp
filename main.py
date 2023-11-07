@@ -6,7 +6,7 @@ import lib.notes as notes
 import lib.accounts as accounts
 import lib.sqlitedb as db
 
-Debug = True
+Debug = False
 
 
 #! --------------------
@@ -103,14 +103,13 @@ try:
             try:
                 #* GUEST MODE
                 if UiMode == 1:
+                    LoggedUser = None # Just to make sure in case account gets removed and trown here
                     command = input("\n[*GUEST MODE*]: Enter command:\n> ").lower()
 
                     if (command == "help"): CommandsHelp()
                     if (command == "exit"): break
                             
                     if (command == "login"):
-                        if (LoggedUser is not None): print("Already logged in!"); continue
-
                         username = input("\nEnter username or email:\n> ")
                         password = input("\nEnter password:\n> ")
                         LoggedUser = accounts.Login(username,password)
@@ -216,9 +215,10 @@ try:
                             data = input("\nEnter user email or uuid\n> ")
                             print(f"Removing account... ({data})")
                             accounts.RemoveAccount(data)
+                            print("Account removed succesfully!")
 
 
-                    # Normal user
+                    # Normal user removeaccounta
                     else:
                         if (command == "removeaccount"):
                             result = input("\nAre you sure you want to remove your account? (yes/no)\n> ")
@@ -269,8 +269,10 @@ try:
                             data = input("\nEnter user email or uuid to delete the notes from\n> ")
                             user = accounts.GetAccount(data)
                         
-
-                        print(f"Removing all notes from user: {user.name}")
+                        if(user is not None):
+                            print(f"Removing all notes from user: {user.name}")
+                        else:
+                            print(f"Removing all notes from user: {data}")
                         notes.RemoveAllNotes(user)
 
                     if (command == "editnote"):
@@ -332,7 +334,7 @@ try:
 
 
 # CTRL + C was pressed (KeyboardInterrupt)
-except Exception as e:
+except:
     if (Debug):
         import traceback
         traceback.print_exc()
