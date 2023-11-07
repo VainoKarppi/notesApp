@@ -260,7 +260,9 @@ try:
                         subject = input("\nEnter subject name:\n> ")
                         text = input("\nEnter text:\n> ")
                         print(f"Creating new note for user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: ({subject})")
-                        notes.AddNote(LoggedUser,subject,text)
+                        note = notes.CreateNote(LoggedUser,subject,text)
+                        db.InsertNote(note)
+                        print("Note added succesfully!")
 
                     if (command == "removenote"):
                         subject = input("\nEnter subject name of the note you want to delete:\n> ")

@@ -51,7 +51,8 @@ def Init():
         Cursor.execute("""CREATE TABLE IF NOT EXISTS notes (
                     owner GUID NOT NULL,
                     subject TEXT NOT NULL,
-                    text TEXT,
+                    text TEXT NOT NULL,
+                    webpage TEXT NOT NULL,
                     creationTimeUTC DATE NOT NULL,
                     hidden INTEGER NOT NULL
                 )""")
@@ -110,13 +111,18 @@ def EmailInUse(email:str) -> bool:
 
 # NOTES
 def InsertNote(note):
-    Cursor.execute("INSERT INTO notes (owner,subject,text,creationTimeUTC,hidden) VALUES (?,?,?,?,?)",(note.ownerUUID, note.subject, note.text, note.creationTimeUTC, note.hidden))
+    Cursor.execute("INSERT INTO notes (owner,subject,text,webpage,creationTimeUTC,hidden) VALUES (?,?,?,?,?,?)",
+                   (note.ownerUUID, note.subject, note.text, note.webPage, str(note.creationTimeUTC), note.hidden))
+    Conn.commit()
+    print("NOTE ADDED")
 
 def UpdateNote(note):
     Cursor.execute("UPDATE notes SET subject = ?, text = ?, hidden = ?, WHERE owner = ? AND subject = ?",(note.subject, note.text, note.hidden, note.ownerUUID, note.subject))
 
 def RemoveNote(note): # DONT USE! (Use update with hidden=true)
-    Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",(note.ownerUUID, note.subject))
+    Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[note.ownerUUID, note.subject])
+    Conn.commit()
 
-def LoadNote(owner: str, subject: str):
-    Cursor.execute("SELECT * FROM notes WHERE owner = ? AND subject = ?",(owner, subject))
+def GetNote(ownerUUID:uuid.UUID, subject: str):
+    result = Cursor.execute("SELECT * FROM notes WHERE owner = ? AND subject = ? COLLATE NOCASE",[ownerUUID, subject]).fetchone()
+    return result

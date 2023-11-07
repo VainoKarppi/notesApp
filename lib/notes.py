@@ -20,10 +20,11 @@ class UUIDEncoder(json.JSONEncoder):
 #! ----------------------
 Notes = []
 class Note:
-    def __init__(self, ownerUUID: uuid.UUID, subject: str, text: str):
+    def __init__(self, ownerUUID: uuid.UUID, subject: str, text: str, webPage: str = ""):
         self.ownerUUID = ownerUUID
         self.subject = subject
         self.text = text
+        self.webPage = webPage
         self.creationTimeUTC = datetime.datetime.utcnow()
         self.hidden = False
 
@@ -31,18 +32,11 @@ class Note:
         return(f"\townerUUID: {self.ownerUUID}\n\tsubject: {self.subject}\n\ttext: {self.text}\n\tcreationTimeUTC: {self.creationTimeUTC}\n")
 
 
-def AddNote(user: accounts.Account, subject: str, text: str) -> bool:
-    subjectInUse = next((x for x in Notes if ((x.ownerUUID == user.uuid) and (x.subject.lower() == subject.lower()))), None)
-    if (subjectInUse): raise ValueError("Subject name already in use!")
+def CreateNote(user: accounts.Account, subject: str, text: str) -> Note:
+    if(db.GetNote(user.uuid,subject) is not None): raise ValueError("Subject name already in use!")
 
     newNote = Note(user.uuid,subject,text)
-    Notes.append(newNote)
-
-    try:
-        UpdateNotes(True)
-    except:
-        Notes.remove(newNote)
-        pass
+    return newNote
 
 
 def UpdateNotes(append: bool = False) -> None:
