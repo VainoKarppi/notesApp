@@ -26,18 +26,20 @@ class Account:
 
 def Login(usernameOrEmail: str, password: str) -> Account:
     result = db.Cursor.execute("SELECT * FROM accounts WHERE name=:data COLLATE NOCASE OR email=:data COLLATE NOCASE", {"data": usernameOrEmail}).fetchone()
-    if (result is None): raise (f"Invalid credientials! ({usernameOrEmail})")
+    if (result is None): raise ValueError("Invalid credientials!")
 
     account = Account(result[1],result[4],result[3],result[0],result[2])
     account.admin = bool(result[5])
     account.creationTimeUTC = datetime.strptime(result[6],'%Y-%m-%d %H:%M:%S.%f')
+    account.hidden = bool(result[7])
 
     #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
     hashedPassword = ComputeSHA3hash(password,account.salt)
     if hashedPassword == account.password:
+        if (account.hidden): raise Exception("Account disabled!")
         return account
         
-    raise ValueError(f"Invalid credientials! ({usernameOrEmail})")
+    raise ValueError("Invalid credientials!")
 
 
 def RemoveAccount(uuidOrEmail:str) -> None:
@@ -47,7 +49,7 @@ def RemoveAccount(uuidOrEmail:str) -> None:
             userUuid = uuidOrEmail
         else:
             userUuid = uuid.UUID(uuidOrEmail)
-    
+
     if (userUuid is not None and db.UuidInUse(userUuid) == False): raise ValueError("UUID not found!")
     
     result = db.Cursor.execute("DELETE FROM accounts WHERE uuid=:uuid OR email=:email COLLATE NOCASE", {"uuid":userUuid, "email":uuidOrEmail})

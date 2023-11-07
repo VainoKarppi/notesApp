@@ -26,6 +26,7 @@ class Note:
 
 
 def CreateNote(user: accounts.Account, subject: str, text: str) -> Note:
+    if (len(subject) == 0): raise ValueError("Subject cannot be empty!")
     if(db.GetNote(user.uuid,subject) is not None): raise ValueError("Subject name already in use!")
 
     newNote = Note(user.uuid,subject,text)
@@ -33,6 +34,7 @@ def CreateNote(user: accounts.Account, subject: str, text: str) -> Note:
 
 
 def GetNoteFromDBResult(result:list) -> Note:
+    if (result is None): return None
     hidden = bool(result[5])
     if (hidden): return None
 

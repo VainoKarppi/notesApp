@@ -1,6 +1,6 @@
 
 from datetime import datetime
-import os;
+import os
 
 import lib.notes as notes
 import lib.accounts as accounts
@@ -33,7 +33,7 @@ def CommandsHelp():
             print(f"\n[ ADMIN COMMANDS ]")
             print(f"AddAccount - (Create Account)")
             print(f"ShowAccounts - (Show All Accounts)")
-            print(f"RemoveOtherAccount - (Remove Someone Elses Account)")
+            print(f"RemoveOtherAccount - (Remove Someone Else's Account)")
 
     elif UiMode == 3:
         print(f"Help - (Show this help page)")
@@ -165,6 +165,7 @@ try:
                             newPassword = input("\nEnter NEW password:\n> ")
                             newPasswordHash = accounts.ComputeSHA3hash(newPassword,LoggedUser.salt)
                             if (newPasswordHash == oldPasswordHash): raise ValueError("New Password cannot be same as old password!")
+                            if (len(newPassword) < 5): raise ValueError("New Password must be at least 5 characters")
 
                             LoggedUser.password = newPasswordHash
                             try:
@@ -177,16 +178,20 @@ try:
                     if (command == "removeaccount"):
                         result = input("\nAre you sure you want to remove your account? (yes/no)\n> ")
                         if (result.lower() == "true" or result.lower() == "yes" or result.lower() == "1"):
-                            accounts.RemoveAccount(LoggedUser.uuid)
+                            accounts.RemoveAccount(LoggedUser.email)
                             LoggedUser = None
                             UiMode = 1
+                            os.system('cls' if os.name == 'nt' else 'clear')
                             print("Account removed succesfully!")
+                            continue # Dont continue since LoggedUser.admin is used later
 
                     #* ADMIN COMMANDS
                     if (LoggedUser.admin):
                         if (command == "addaccount"): 
                             username = input("\nEnter username:\n> ")
+                            if (len(username) < 5): raise ValueError("Username must be at least 5 characters")
                             password = input("\nEnter password:\n> ")
+                            if (len(password) < 5): raise ValueError("Password must be at least 5 characters")
                             email = input("\nEnter email:\n> ")
                             admin = input("\nIs admin (yes/no):\n> ")
                             isAdmin = admin.lower() == "true" or admin == "1" or admin.lower() == "yes"
@@ -207,7 +212,6 @@ try:
 
                         if (command == "removeotheraccount"):
                             data = input("\nEnter user email or uuid\n> ")
-                            print(f"Removing account... ({data})")
                             accounts.RemoveAccount(data)
                             print("Account removed succesfully!")
 
@@ -239,14 +243,12 @@ try:
                     if (command == "addnote"):
                         subject = input("\nEnter subject name:\n> ")
                         text = input("\nEnter text:\n> ")
-                        print(f"Creating new note for user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: ({subject})")
                         note = notes.CreateNote(LoggedUser,subject,text)
                         db.InsertNote(note)
                         print("Note added succesfully!")
 
                     if (command == "removenote"):
                         subject = input("\nEnter subject name of the note you want to delete:\n> ")
-                        print(f"Removing a note from user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: {subject}")
                         db.RemoveNote(LoggedUser.uuid,subject)
                         print("Note removed succesfully!")
                     
@@ -266,7 +268,7 @@ try:
                     if (command == "editnote"):
                         subject = input("\nEnter subject name to edit:\n> ")
                         note = notes.GetNote(LoggedUser.uuid,subject)
-                        if (note is None): print("No note was found with this subject name!"); continue
+                        if (note is None): raise ValueError("No note was found with this subject name!")
                         
                         note.text = input("\nEnter new text for the note\n> ")
                         db.UpdateNote(note)
@@ -277,7 +279,7 @@ try:
                     if (command == "readnote"):
                         subject = input("\nEnter subject name to read:\n> ")
                         note = notes.GetNote(LoggedUser.uuid,subject)
-                        if (note is None): print("No note was found with this subject name!"); continue
+                        if (note is None): raise ValueError("No note was found with this subject name!")
                         print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
 
                     if (command == "searchnote"):
