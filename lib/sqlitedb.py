@@ -68,7 +68,7 @@ def Init():
 # ACCOUNTS
 def InsertAccount(account):
     Cursor.execute("INSERT INTO accounts (uuid,name,salt,email,password,admin,creationtimeutc,hidden) VALUES (?,?,?,?,?,?,?,?)",
-                   (account.uuid, account.name, account.salt, account.email, account.password, account.admin, account.creationTimeUTC ,account.hidden))
+                   (account.uuid, account.name, account.salt, account.email, account.password, account.admin, str(account.creationTimeUTC) ,account.hidden))
     Conn.commit()
 
 def UpdateAccount(account) -> bool:
