@@ -88,9 +88,6 @@ try:
         
         db.Init()
 
-        print("Restoring notes...")
-        notes.RestoreNotes()
-        print(f"Restored {len([x for x in notes.Notes if (x.hidden == False)])} notes(s)...\n")
         
         if (db.EmailInUse("admin@mail.com") == False):
             print("Creating Admin account: (username: admin | password: admin)")
@@ -250,10 +247,12 @@ try:
                         allNotes = db.LoadAllUserNotes(LoggedUser.uuid)
                         if (len(allNotes) == 0): print("No notes found for current user!")
                         index = 0
-                        for note in allNotes:
+                        for noteData in allNotes:
                             index = index + 1
-                            print(f"NOTE: ({index})")
-                            print(f"\townerUUID: {note[0]}\n\tsubject: {note[1]}\n\ttext: {note[2]}\n\twebPage: {note[3]}\n\tcreationTimeUTC: {note[4]}\n")
+                            note = notes.GetNoteFromDBResult(noteData)
+                            if (note is not None):
+                                print(f"NOTE: ({index})")
+                                print(note)
 
 
                     if (command == "addnote"):
