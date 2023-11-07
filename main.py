@@ -242,7 +242,7 @@ try:
                     if (command == "help"): CommandsHelp()
                         
                     if (command == "shownotes"):
-                        thisUsersNotes = [x for x in notes.Notes if x.ownerUUID == LoggedUser.uuid]
+                        thisUsersNotes = [x for x in notes.Notes if x.ownerUUID == LoggedUser.uuid and x.hidden == False]
                         if (len(thisUsersNotes) == 0): print("No notes found for current user!")
                         
                         index = 0
@@ -280,7 +280,7 @@ try:
                         searchMode = input("\nEnter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
                         if (searchMode == "1"):
                             subjectFilter = input("\nEnter subject filter:\n> ")
-                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and subjectFilter.lower() in x.subject.lower())]
+                            notes = [x for x in notes.Notes if (x.ownerUUID == LoggedUser.uuid and subjectFilter.lower() in x.subject.lower() and x.hidden == False)]
                             print(f"Found {len(notes)} note(s) with this subject filter!")
                             for note in notes: print(note)
 
