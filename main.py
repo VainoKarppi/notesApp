@@ -94,7 +94,8 @@ try:
         
         if (db.EmailInUse("admin@mail.com") == False):
             print("Creating Admin account: (username: admin | password: admin)")
-            accounts.AddAccount("admin","admin","admin@mail.com",True)
+            admin = accounts.CreateAccount("admin","admin","admin@mail.com",True)
+            db.InsertAccount(admin)
 
 
         print("Type 'help' to view commands!")
@@ -199,8 +200,11 @@ try:
                             admin = input("\nIs admin (yes/no):\n> ")
                             isAdmin = admin.lower() == "true" or admin == "1" or admin.lower() == "yes"
                             print(f"Creating account... ({username}) - ({email}) - Admin:{isAdmin}\n")
-                            newAccount = accounts.AddAccount(username,password,email,isAdmin)
-                            if (newAccount is not None): print("Account created succesfully!")
+                            newAccount = accounts.CreateAccount(username,password,email,isAdmin)
+                            if (newAccount is not None):
+                                db.InsertAccount(newAccount)
+                                print("Account created succesfully!")
+
                             else: print("Account creation failed!")
 
                         if (command == "showaccounts"):

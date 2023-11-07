@@ -71,7 +71,7 @@ def GetAccount(uuidOrEmail:str) -> Account:
 
 
 # Returns create Account class
-def AddAccount(name:str, password:str, email:str, admin:bool = False) -> Account:
+def CreateAccount(name:str, password:str, email:str, admin:bool = False) -> Account:
     if '@' in name: raise ValueError("Username cannot be email!")
     if '@' not in email: raise ValueError("Invalid Email!")
 
@@ -80,8 +80,6 @@ def AddAccount(name:str, password:str, email:str, admin:bool = False) -> Account
     
     account = Account(name,password,email)
     account.admin = admin
-    
-    db.InsertAccount(account)
 
     return account
 
