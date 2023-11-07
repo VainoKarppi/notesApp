@@ -260,7 +260,7 @@ try:
                     if (command == "removenote"):
                         subject = input("\nEnter subject name of the note you want to delete:\n> ")
                         print(f"Removing a note from user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: {subject}")
-                        notes.RemoveNotes(LoggedUser,subject)
+                        notes.RemoveNote(LoggedUser,subject)
 
                     if (command == "editnote"):
                         subject = input("\nEnter subject name to edit:\n> ")
