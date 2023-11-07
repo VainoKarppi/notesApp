@@ -47,6 +47,7 @@ def CommandsHelp():
             print(f"\n[ ADMIN COMMANDS ]")
             print(f"AddAccount - (Create Account)")
             print(f"ShowAccounts - (Show All Accounts)")
+            print(f"RemoveAccount - (Remove Account)")
 
     elif UiMode == 3:
         print(f"Help - (Show this help page)")
@@ -78,7 +79,6 @@ def Exit(code:int = 0):
 
     print("\nBYE! 👋\n")
     import sys; sys.exit(code)
-    print("FINAL")
 
 
 

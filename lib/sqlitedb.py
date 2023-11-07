@@ -20,7 +20,7 @@ sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 sqlite3.register_converter('datetime', convert_datetime)
 
-Conn = sqlite3.connect("notes.db", detect_types=sqlite3.PARSE_DECLTYPES)
+Conn = sqlite3.connect("notesapp.db", detect_types=sqlite3.PARSE_DECLTYPES)
 Cursor = Conn.cursor()
 
 
