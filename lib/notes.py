@@ -61,7 +61,7 @@ def RemoveNote(user: accounts.Account, subject: str) -> None:
     UpdateNotes()
 
 
-def RemoveNotes() -> None:
+def RemoveAllNotes() -> None:
     if os.stat("notes.json").st_size == 0: return
 
     open('notes.json', 'w').close()

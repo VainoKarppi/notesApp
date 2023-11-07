@@ -80,7 +80,7 @@ def GetAllAccounts() -> list:
 
     return accounts
 
-def RemoveAccounts() -> None:
+def RemoveAllAccounts() -> None:
     db.Cursor.execute("TRUNCATE TABLE accounts")
 
 def IsUserSessionValid(uuid: str) -> bool:
