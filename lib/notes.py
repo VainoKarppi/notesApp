@@ -61,12 +61,17 @@ def RemoveNote(user: accounts.Account, subject: str) -> None:
     UpdateNotes()
 
 
-def RemoveAllNotes() -> None:
+def RemoveAllNotes(user: accounts.Account = None) -> None:
     if os.stat("notes.json").st_size == 0: return
 
-    open('notes.json', 'w').close()
+    # Remove notes from this sepcific user only!
     global Notes
-    Notes = []
+    if (user is not None):
+        Notes = [x for x in Notes if x.ownerUUID != user.uuid]
+        UpdateNotes()
+    else:
+        open('notes.json', 'w').close()
+        Notes = []
 
 
 def RestoreNotes() -> None:

@@ -54,6 +54,7 @@ def CommandsHelp():
         print(f"RemoveNote - (Removes a note)")
         print(f"EditNote - (Edit Existing Note)")
         print(f"ShowNotes - (Show All Available Notes)")
+        print(f"RemoveAllNotes - (Removes all notes from user)")
         print(f"ReadNote - (View a Specific Note)")
         print(f"SearchNote - (Search for a Note)")
         print(f"Exit - (Return to Account Mode)")
@@ -261,6 +262,16 @@ try:
                         subject = input("\nEnter subject name of the note you want to delete:\n> ")
                         print(f"Removing a note from user: [({LoggedUser.name}) - ({LoggedUser.uuid})] with subject: {subject}")
                         notes.RemoveNote(LoggedUser,subject)
+                    
+                    if(command == "removeallnotes"):
+                        user = LoggedUser
+                        if (user.admin):
+                            data = input("\nEnter user email or uuid to delete the notes from\n> ")
+                            user = accounts.GetAccount(data)
+                        
+
+                        print(f"Removing all notes from user: {user.name}")
+                        notes.RemoveAllNotes(user)
 
                     if (command == "editnote"):
                         subject = input("\nEnter subject name to edit:\n> ")
