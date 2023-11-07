@@ -82,8 +82,18 @@ def RestoreNotes() -> None:
     with open('notes.json', 'r') as data: notes = json.load(data)
 
     global Notes
+    update = False
     for note in notes:
-        loadedNote = Note(uuid.UUID(note['ownerUUID']),note['subject'],note['text'])
-        loadedNote.creationTimeUTC = note['creationTimeUTC']
+        # If User UUID was not found set update hidden as true
+        ownerUUID = uuid.UUID(note['ownerUUID'])
+        loadedNote = Note(ownerUUID,note['subject'],note['text'])
+        loadedNote.creationTimeUTC = datetime.datetime.strptime(note['creationTimeUTC'],'%Y-%m-%d %H:%M:%S.%f')
+
+        if (db.UuidInUse(ownerUUID) == False):
+            loadedNote.hidden = True
+            update = True
 
         Notes.append(loadedNote)
+
+    if (update):
+        UpdateNotes()
