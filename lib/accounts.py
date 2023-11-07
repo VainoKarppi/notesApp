@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import uuid
 import lib.sqlitedb as db
 
@@ -16,6 +16,7 @@ class Account:
         self.email = email
         self.password = password if IsSHA3hash(password) else ComputeSHA3hash(password,self.salt)
         self.admin:bool = False
+        self.creationTimeUTC = datetime.utcnow()
         self.hidden = False
     
     def __str__(self):
@@ -29,6 +30,7 @@ def Login(usernameOrEmail: str, password: str) -> Account:
 
     account = Account(result[1],result[4],result[3],result[0],result[2])
     account.admin = bool(result[5])
+    account.creationTimeUTC = datetime.strptime(result[6],date_format)
 
     #TODO what if there is a username and same password is use for two accounts?? (Ask for email) 😬
     hashedPassword = ComputeSHA3hash(password,account.salt)

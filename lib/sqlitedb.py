@@ -6,9 +6,19 @@ import lib.accounts as accounts
 import lib.notes as notes
 
 
+def adapt_datetime(dt):
+    return int(dt.strftime('%s'))
+
+def convert_datetime(ts):
+    return datetime.datetime.fromtimestamp(ts)
+
 # SUPPORT FOR UUID/GUID FOR DATABASE
 sqlite3.register_adapter(uuid.UUID, lambda u: u.bytes_le)
 sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
+
+# SUPPORT FOR DATETIME FOR DATABASE
+sqlite3.register_adapter(datetime.datetime, adapt_datetime)
+sqlite3.register_converter('datetime', convert_datetime)
 
 Conn = sqlite3.connect("notes.db", detect_types=sqlite3.PARSE_DECLTYPES)
 Cursor = Conn.cursor()
@@ -24,7 +34,7 @@ def ConnectionOpen():
 
 def Init():
     try:
-
+        
         # Create accounts table
         Cursor.execute("""CREATE TABLE IF NOT EXISTS accounts (     
                     uuid GUID PRIMARY KEY NOT NULL,
@@ -33,6 +43,7 @@ def Init():
                     email TEXT NOT NULL,
                     password TEXT NOT NULL,
                     admin INTEGER NOT NULL,
+                    creationtimeutc INTEGER NOT NULL,
                     hidden INTEGER NOT NULL
                 )""")
         
@@ -56,7 +67,8 @@ def Init():
 
 # ACCOUNTS
 def InsertAccount(account):
-    Cursor.execute("INSERT INTO accounts (uuid,name,salt,email,password,admin,hidden) VALUES (?,?,?,?,?,?,?)",(account.uuid, account.name, account.salt, account.email, account.password, account.admin, account.hidden))
+    Cursor.execute("INSERT INTO accounts (uuid,name,salt,email,password,admin,creationtimeutc,hidden) VALUES (?,?,?,?,?,?,?,?)",
+                   (account.uuid, account.name, account.salt, account.email, account.password, account.admin, account.creationTimeUTC ,account.hidden))
     Conn.commit()
 
 def UpdateAccount(account) -> bool:
