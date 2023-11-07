@@ -284,17 +284,18 @@ try:
                     if (command == "editnote"):
                         subject = input("\nEnter subject name to edit:\n> ")
                         note = notes.GetNote(LoggedUser.uuid,subject)
-
                         if (note is None): print("No note was found with this subject name!"); continue
+                        
                         note.text = input("\nEnter new text for the note\n> ")
                         success = db.UpdateNote(note)
+                        
                         if(success): print("Note Updated Succesfully")
                         else: print("Note Updated Failed!")
 
 
                     if (command == "readnote"):
                         subject = input("\nEnter subject name to read:\n> ")
-                        note = next((x for x in notes.Notes if x.subject.lower() == subject.lower()), None)
+                        note = notes.GetNote(LoggedUser.uuid,subject)
                         if (note is None): print("No note was found with this subject name!"); continue
                         print(f"\n(Subject: {note.subject})\nText:\t{note.text}")
 
