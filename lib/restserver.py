@@ -26,16 +26,15 @@ class Handler (http.server.BaseHTTPRequestHandler):
             type = data["type"]
             if (type.lower() == "login"):
                 account = User.Authenticate(data["username"],data["password"])
+                if(account is None):
+                    self.send_response(HTTPStatus.UNAUTHORIZED)
+                    self.end_headers()
 
-            if self.headers.get("Authorization") == "token":
                 self.send_response(HTTPStatus.OK)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 self.wfile.write(bytes(self.api_response))
                 
-            else:
-                self.send_response(HTTPStatus.UNAUTHORIZED)
-                self.end_headers()
         except:
             self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
             self.end_headers()
