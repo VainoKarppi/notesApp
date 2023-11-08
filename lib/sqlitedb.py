@@ -20,9 +20,6 @@ sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 sqlite3.register_converter('datetime', convert_datetime)
 
-# sqlite3.PARSE_DECLTYPES breaks the ability to use DATE. however it adds the ability to read UUID's!
-Conn = sqlite3.connect("notesapp.db", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
-Cursor = Conn.cursor()
 
 
 def ConnectionOpen():
@@ -35,6 +32,10 @@ def ConnectionOpen():
 
 def Init():
     try:
+        # sqlite3.PARSE_DECLTYPES breaks the ability to use DATE. however it adds the ability to read UUID's!
+        global Conn,Cursor
+        Conn = sqlite3.connect("notesapp.db", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
+        Cursor = Conn.cursor()
         
         # Create accounts table
         Cursor.execute("""CREATE TABLE IF NOT EXISTS accounts (     

@@ -5,7 +5,7 @@ import os
 import lib.notes as notes
 import lib.accounts as accounts
 import lib.sqlitedb as db
-import lib.restserver as restserver
+import lib.webserver as webserver
 
 Debug = True
 
@@ -22,7 +22,8 @@ def CommandsHelp():
     print("\n===============| HELP COMMANDS |===============")
     if UiMode == 1:
         print(f"Help  - (Show this help page)")
-        print(f"Login - (Login to account)")    
+        print(f"Login - (Login to account)")
+        print(f"CreateAccount - (Creates a new account)")
         print(f"Exit - (Closes Program)")
     elif UiMode == 2:
         print(f"Notes - (Enter Notes Mode)")
@@ -57,8 +58,8 @@ def Exit(code:int = 0):
 
     #Reset notes!
     #RemoveAllNotes()
-    print("Stopping REST server...")
-    restserver.StopServer()
+    print("Stopping WEB server...")
+    webserver.StopServer()
 
 
     if (db.ConnectionOpen()):
@@ -80,7 +81,7 @@ try:
         #db.Conn.execute("DROP TABLE IF EXISTS notes")
         
         db.Init()
-        restserver.StartServer(8000)
+        webserver.StartServer(8000)
 
         
         if (db.EmailInUse("admin@mail.com") == False):
@@ -111,7 +112,19 @@ try:
                             print(f"Account: [({username}) | ({LoggedUser.uuid})] Logged in!")   
                             continue        
                     
+                    if (command == "createaccount"):
+                        username = input("\nEnter username:\n> ")
+                        if (len(username) < 5): raise ValueError("Username must be at least 5 characters")
+                        password = input("\nEnter password:\n> ")
+                        if (len(password) < 5): raise ValueError("Password must be at least 5 characters")
+                        email = input("\nEnter email:\n> ")
+                        print(f"Creating account... ({username}) - ({email}) - Admin:{False}\n")
 
+                        newAccount = accounts.CreateAccount(username,password,email,False)
+                        if (newAccount is None): raise Exception("Account creation failed!")
+
+                        db.InsertAccount(newAccount)
+                        print("Account created succesfully!")
 
 
                 #* USER LOGGED IN MODE
@@ -202,11 +215,9 @@ try:
                             isAdmin = admin.lower() == "true" or admin == "1" or admin.lower() == "yes"
                             print(f"Creating account... ({username}) - ({email}) - Admin:{isAdmin}\n")
                             newAccount = accounts.CreateAccount(username,password,email,isAdmin)
-                            if (newAccount is not None):
-                                db.InsertAccount(newAccount)
-                                print("Account created succesfully!")
-
-                            else: print("Account creation failed!")
+                            if (newAccount is None): raise Exception("Account creation failed!")
+                            db.InsertAccount(newAccount)
+                            print("Account created succesfully!")
 
                         if (command == "showaccounts"):
                             index = 0
