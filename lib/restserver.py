@@ -17,11 +17,12 @@ class Handler (http.server.BaseHTTPRequestHandler):
         return json.dumps({"message": "Hello world"}).encode()
     
     def do_POST(self):
-        print("1")
         content_length = int(self.headers.get('Content-Length', 0))
-        data = self.rfile.read(content_length)
+        data = json.loads(self.rfile.read(content_length))
+
         print(data)
-        print("2")
+        print(data["username"])
+        print(data["password"])
 
         if self.headers.get("Authorization") == "token":
             self.send_response(200)
