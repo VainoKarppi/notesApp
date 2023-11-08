@@ -21,7 +21,7 @@ sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 sqlite3.register_converter('datetime', convert_datetime)
 
 # sqlite3.PARSE_DECLTYPES breaks the ability to use DATE. however it adds the ability to read UUID's!
-Conn = sqlite3.connect("notesapp.db", detect_types=sqlite3.PARSE_DECLTYPES)
+Conn = sqlite3.connect("notesapp.db", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
 Cursor = Conn.cursor()
 
 

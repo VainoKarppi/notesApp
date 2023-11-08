@@ -6,6 +6,8 @@ from typing import Tuple
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
 import threading
+import lib.sqlitedb as db
+import lib.accounts as accounts
 
 class Handler (http.server.BaseHTTPRequestHandler):
 
@@ -17,24 +19,31 @@ class Handler (http.server.BaseHTTPRequestHandler):
         return json.dumps({"message": "Hello world"}).encode()
     
     def do_POST(self):
-        content_length = int(self.headers.get('Content-Length', 0))
-        data = json.loads(self.rfile.read(content_length))
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            data = json.loads(self.rfile.read(content_length))
 
-        print(data)
-        print(data["username"])
-        print(data["password"])
+            type = data["type"]
+            if (type.lower() == "login"):
+                account = User.Authenticate(data["username"],data["password"])
 
-        if self.headers.get("Authorization") == "token":
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(bytes(self.api_response))
-            
-        else:
-            self.send_response(401)
-            self.send_header('WWW-Authenticate', 'Bearer realm="example"')
+            if self.headers.get("Authorization") == "token":
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(bytes(self.api_response))
+                
+            else:
+                self.send_response(HTTPStatus.UNAUTHORIZED)
+                self.end_headers()
+        except:
+            self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
             self.end_headers()
     
+class User:
+    def Authenticate(username:str, password:str) -> accounts.Account:
+        account = accounts.Login(username,password)
+        return account
 
 
 def RunServer(port):

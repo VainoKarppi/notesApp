@@ -1,4 +1,5 @@
 $body = @{
+    "type"="login"
     "username"="admin"
     "password"="admin"
    } | ConvertTo-Json
