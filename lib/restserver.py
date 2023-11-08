@@ -1,31 +1,45 @@
+import base64
 import json
 import http.server
 import socketserver
 from typing import Tuple
 from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler
 import threading
 
-class Handler (http.server.SimpleHTTPRequestHandler):
+class Handler (http.server.BaseHTTPRequestHandler):
 
     def __init__ (self, request: bytes, client_address: Tuple [str, int], server: socketserver.BaseServer):
         super().__init__ (request, client_address, server)
 
     @property
     def api_response (self):
-        return json.dumps ({"message": "Hello world"}).encode()
+        return json.dumps({"message": "Hello world"}).encode()
+    
+    def do_POST(self):
+        print("1")
+        content_length = int(self.headers.get('Content-Length', 0))
+        data = self.rfile.read(content_length)
+        print(data)
+        print("2")
 
-    def do_GET(self):
-        if self.path == '/':
-            self.send_response(HTTPStatus.OK)
-            self.send_header("Content-Type", "application/json")
+        if self.headers.get("Authorization") == "token":
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(bytes (self.api_response))
+            self.wfile.write(bytes(self.api_response))
+            
+        else:
+            self.send_response(401)
+            self.send_header('WWW-Authenticate', 'Bearer realm="example"')
+            self.end_headers()
     
 
 
 def RunServer(port):
     global Server
-    Server = socketserver.TCPServer (("0.0.0.0", port), Handler)
+    Server = socketserver.TCPServer(("0.0.0.0", port), Handler)
+    Server.socket_type
     Server.serve_forever()
 
 def StartServer(port):
