@@ -1,5 +1,6 @@
 import base64
 import json
+import uuid
 import http.server
 import os
 import secrets
@@ -8,6 +9,7 @@ import string
 from typing import Any, Tuple
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
+from datetime import datetime
 import threading
 import lib.sqlitedb as db
 import lib.accounts as accounts
@@ -25,25 +27,8 @@ def build_http_response(status: HTTPStatus, headers:dict[str,str] = None, body:s
 
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
-    HEADERS:dict[str,str] = {}
-    type = "GET"
-    path = "/"
-    version = None
-    
-    def GetHeaders(self,data:str):
-        self.HEADERS = {}
-
-        header_data_lines = data.split('\n')
-        datat = header_data_lines[0].split(' ')
-        self.type = datat[0]
-        self.path = datat[1]
-        self.version = datat[2]
-        for asd in datat:
-            print(asd)
-        for line in header_data_lines:
-            if (':' not in line): continue
-            key, value = line.split(': ')
-            self.HEADERS[key] = value
+    DEBUG = True
+    PAGES = ["/","/notes","/note"]
 
     def handle(self):
         try:
@@ -56,6 +41,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             parameters = self.ParseParameters(path)
 
             if (method.lower() != "get"): raise NotImplementedError(f"{method} not implemented yet!")
+            if (subDir.lower() not in self.PAGES): raise SiteNotFound(f"{subDir} is not a valid sub directory path")
 
 
             headers = {
@@ -126,7 +112,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 def RunServer(port):
     global Server
-    Server = socketserver.TCPServer(("0.0.0.0", port), MyRequestHandler)
+    Server = socketserver.TCPServer(("127.0.0.1", port), MyRequestHandler)
     Server.serve_forever()
 
 def StartServer(port):
@@ -135,7 +121,9 @@ def StartServer(port):
     print (f"WEB Server started at port {port}")
 
 def StopServer():
+    Server.server_close()
     Server.shutdown()
+
 
 class NotAuthenticatedException(Exception):
     pass
