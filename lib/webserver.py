@@ -47,36 +47,15 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         try:
-            data = self.request.recv(1024).decode('utf-8')
-            
-            print(f"\nREQUEST: {self.client_address} -> {data}")
-            print(self.HEADERS)
-            self.GetHeaders(data)
-            print(self.HEADERS)
+            headers = self.GetHeaders()
 
-            print(self.path)
-            
-            auth_data = self.HEADERS["Authorization"][6:] # "Basic bXl1c2VybmFtZTpteXBhc3N3b3Jk" --> "bXl1c2VybmFtZTpteXBhc3N3b3Jk"
-            username, password = base64.b64decode(auth_data).decode('utf-8').split(':')
-            user = None
+            method = headers['Method']
+            path = headers["Referer"]
+            baseurl = "/".join((path.split('/')[0:3])).strip()
+            subDir = "/" + "".join((path.split('/')[3:])).strip().split('?')[0]
+            parameters = self.ParseParameters(path)
 
-            try:
-                user = accounts.Login(username,password)
-            except:
-                pass
-
-            if not user:
-                self.request.sendall(b'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm="Restricted"\r\n\r\n')
-                return
-
-            data = {
-                'name': 'John',
-                'age': 30,
-                'city': 'New York'
-            }
-
-            # Convert the dictionary to a JSON object
-            json_data = json.dumps(data)
+            if (method.lower() != "get"): raise NotImplementedError(f"{method} not implemented yet!")
 
 
             headers = {
@@ -108,7 +87,27 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             self.request.sendall(http_response)
         
         print("REQUEST END")
-        print("REQUEST END 2")
+    def GetHeaders(self):
+        data = self.request.recv(1024).decode('utf-8')
+        headers = {}
+        headerLines = data.split('\n')
+
+        headers["Method"] = headerLines[0].split(' ')[0].strip()
+
+        for line in headerLines:
+            if (':' not in line): continue
+            key, value = line.split(': ')
+            headers[key] = value
+        
+        if ("Referer" not in headers):
+            headerRequest = headerLines[0].split(' ')
+            baseAddress = f"{self.server.server_address[0]}:{self.server.server_address[1]}"
+            if ("Host" in headers): baseAddress = f"{headers['Host']}"
+            headers["Referer"] = (f"http://{baseAddress.strip()}{headerRequest[1].strip()}").strip()
+        
+        if (self.DEBUG): print(f"\nREQUEST: {self.client_address} -> {headerLines[0]}\nHEADERS:\n{headers}")
+
+        return headers
 
 def RunServer(port):
     global Server
