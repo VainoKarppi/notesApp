@@ -59,12 +59,13 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 
             headers = {
-                "Content-Type": "text/plain",
+                "Content-Type": "application/json",
                 "Server": "NotesApp API",
+                "WWW-Authenticate": "Basic",
             }
     
-            print("LOGIN SUCCESS")
-            http_response = build_http_response(HTTPStatus.OK, headers, json_data)
+            print(f"LOGIN SUCCESS: {user.name}")
+            http_response = self.BuildResponse(HTTPStatus.OK, headers, json_data)
             self.request.sendall(http_response)
         except Exception as e:
             headers = {
@@ -87,6 +88,20 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             self.request.sendall(http_response)
         
         print("REQUEST END")
+    def BuildResponse(self, status: HTTPStatus, headers:dict[str,str] = None, body:str = None) -> bytes:
+        response = f"HTTP/1.1 {status._value_} {status.phrase}\r\n"
+
+        if (headers is not None):
+            for header, value in headers.items(): response += f"{header}: {value}\r\n"
+
+        if (body is None): body = status.phrase
+        response += "\r\n" + body
+
+        if (self.DEBUG): print(f"\nRESPONSE: ({self.client_address}) --> STATUS:{status._value_} -> HEADERS:{headers} -> BODY:{body}")
+
+        return response.encode('utf-8')
+    
+
     def GetHeaders(self):
         data = self.request.recv(1024).decode('utf-8')
         headers = {}
