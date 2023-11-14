@@ -2,7 +2,9 @@ import base64
 import json
 import http.server
 import os
+import secrets
 import socketserver
+import string
 from typing import Any, Tuple
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
@@ -10,86 +12,92 @@ import threading
 import lib.sqlitedb as db
 import lib.accounts as accounts
 
-class Handler (http.server.BaseHTTPRequestHandler):
-    def __init__ (self, request: bytes, client_address: Tuple [str, int], server: socketserver.BaseServer):
-        super().__init__ (request, client_address, server)
+def build_http_response(status: HTTPStatus, headers:dict[str,str] = None, body:str = "") -> bytes:
+    # Start building the response string
+    response = f"HTTP/1.1 {status._value_} {status.phrase}\r\n"
 
-    # Stop logs
-    def log_message(self, format: str, *args: Any) -> None:
-        #return super().log_message(format, *args)
-        return None
+    if (headers is not None):
+        for header, value in headers.items():
+            response += f"{header}: {value}\r\n"
+
+    response += "\r\n" + body
+    return response.encode('utf-8')
+
+
+class MyRequestHandler(socketserver.BaseRequestHandler):
+    HEADERS:dict[str,str] = {}
+    type = "GET"
+    path = "/"
+    version = None
     
-    @property
-    def api_response (self):
-        return json.dumps({"message": "Hello world"}).encode()
-    
-    def do_POST(self):
+    def GetHeaders(self,data:str):
+        self.HEADERS = {}
+
+        header_data_lines = data.split('\n')
+        datat = header_data_lines[0].split(' ')
+        self.type = datat[0]
+        self.path = datat[1]
+        self.version = datat[2]
+        for asd in datat:
+            print(asd)
+        for line in header_data_lines:
+            if (':' not in line): continue
+            key, value = line.split(': ')
+            self.HEADERS[key] = value
+
+    def handle(self):
         try:
-            content_length = int(self.headers.get('Content-Length', 0))
-            data = User.ParseInputData(self.rfile.read(content_length))
-            if (self.path == "/login"):
-                account = User.Authenticate(data["username"],data["password"])
-                if(account is None):
-                    self.send_response(HTTPStatus.UNAUTHORIZED)
-                    self.end_headers()
+            data = self.request.recv(1024).decode('utf-8')
+            
+            print(f"\nREQUEST: {self.client_address} -> {data}")
+            print(self.HEADERS)
+            self.GetHeaders(data)
+            print(self.HEADERS)
 
-                self.send_response(HTTPStatus.OK)
-                self.send_header('Content-type', 'application/json')
-                self.send_header('Set-Cookie', "authorized=1") # TODO send something to check if the server has restarted
-                self.end_headers()
-                self.wfile.write(bytes(self.api_response))
-                
+            print(self.path)
+            
+            auth_data = self.HEADERS["Authorization"][6:] # "Basic bXl1c2VybmFtZTpteXBhc3N3b3Jk" --> "bXl1c2VybmFtZTpteXBhc3N3b3Jk"
+            username, password = base64.b64decode(auth_data).decode('utf-8').split(':')
+            user = None
+
+            try:
+                user = accounts.Login(username,password)
+            except:
+                pass
+
+            if not user:
+                self.request.sendall(b'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm="Restricted"\r\n\r\n')
+                return
+
+            data = {
+                'name': 'John',
+                'age': 30,
+                'city': 'New York'
+            }
+
+            # Convert the dictionary to a JSON object
+            json_data = json.dumps(data)
+
+
+            headers = {
+                "Content-Type": "text/plain",
+                "Server": "NotesApp API",
+            }
+    
+            print("LOGIN SUCCESS")
+            http_response = build_http_response(HTTPStatus.OK, headers, json_data)
+            self.request.sendall(http_response)
         except Exception as e:
             print(e)
-            self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
-            self.end_headers()
-        
-    def do_GET(self):
-        print("GET REQUEST")
-        if (self.path not in WebView.Paths):
-            self.send_response(HTTPStatus.NOT_FOUND)
-            self.end_headers()
-            return
-        
-        self.send_response(HTTPStatus.OK)
-        self.send_header("Content-type", "text/html")
-        self.end_headers()
-        
-        if (self.path == "/"): self.wfile.write(bytes(WebView.LoginPage(),"utf-8"))
-        if (self.path == "/test"): self.wfile.write(bytes(WebView.TestPage(),"utf-8"))
-
-class User:
-    def ParseInputData(data):
-        splitted = data.decode('utf-8').split('&')
-
-        data = {}
-        for pair in splitted:
-            key, value = pair.split('=')
-            data[key] = value
-
-        return data
-
-    def Authenticate(username:str, password:str) -> accounts.Account:
-        account = accounts.Login(username,password)
-        return account
-
-class WebView:
-    global Dir_path
-    Paths = ["/","/test"]
-    Dir_path = os.path.dirname(os.path.realpath(__file__))
-    def LoginPage():
-        html_path = os.path.join(Dir_path, "../html/login.html")
-        with open(html_path, "r") as f:
-            return f.read()
-
-    
-    def TestPage():
-        return "<body><p>This is a test.</p>"
-
+            http_response = build_http_response(HTTPStatus.INTERNAL_SERVER_ERROR, None, str(e))
+            self.request.sendall(http_response)
+            
+        print("REQUEST END")
+        print("REQUEST END 2")
 
 def RunServer(port):
     global Server
-    Server = socketserver.TCPServer(("0.0.0.0", port), Handler)
+    Server = socketserver.TCPServer(("0.0.0.0", port), MyRequestHandler)
     Server.serve_forever()
 
 def StartServer(port):

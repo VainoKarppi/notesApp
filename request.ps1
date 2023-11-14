@@ -1,6 +1,9 @@
-#TODO TEST TEST
-$body = @{
-    "username"="admin"
-    "password"="admin"
-   }
-Invoke-WebRequest -Uri "http://localhost:8000/" -Method POST -Body $body
+$username = "admin"
+$password = "admin"
+$uri = "http://localhost:8000/test"
+$headers = @{
+    Authorization = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($username):$($password)"))
+}
+Invoke-WebRequest -Uri $uri -Headers $headers
+
+
