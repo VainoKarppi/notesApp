@@ -25,7 +25,7 @@ class UUIDEncoder(json.JSONEncoder):
 
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
-    DEBUG = True
+    DEBUG = False
     PAGES = ["/","/notes","/note"]
 
     def HandleClientRequest(self,user:accounts.Account, method:str, baseurl:str, subDir:str, parameters: dict[str,str]):
@@ -87,11 +87,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             else:
                 http_response = self.BuildResponse(HTTPStatus.INTERNAL_SERVER_ERROR, headers,str(e))
 
-
-            print(e)
             self.request.sendall(http_response)
-        
-        print("REQUEST END")
 
     def Authenticate(self, headers) -> accounts.Account:
         try:
