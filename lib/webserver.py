@@ -13,22 +13,38 @@ from datetime import datetime
 import threading
 import lib.sqlitedb as db
 import lib.accounts as accounts
+import lib.notes as notes
 
-def build_http_response(status: HTTPStatus, headers:dict[str,str] = None, body:str = "") -> bytes:
-    # Start building the response string
-    response = f"HTTP/1.1 {status._value_} {status.phrase}\r\n"
 
-    if (headers is not None):
-        for header, value in headers.items():
-            response += f"{header}: {value}\r\n"
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, uuid.UUID): return obj.hex
+        if isinstance(obj, datetime): return str(obj)
+        return json.JSONEncoder.default(self, obj)
 
-    response += "\r\n" + body
-    return response.encode('utf-8')
 
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
     DEBUG = True
     PAGES = ["/","/notes","/note"]
+
+    def HandleClientRequest(self,user:accounts.Account, method:str, baseurl:str, subDir:str, parameters: dict[str,str]):
+        # TODO Spawn in a new thread
+        method = method.lower()
+        subDir = subDir.lower()
+        if(subDir == "/notes" or subDir == "/"):
+            allnotes = notes.GetAllUserNotes(user.uuid)
+            json_string = json.dumps([ob.__dict__ for ob in allnotes],cls=UUIDEncoder)
+            return json_string
+        
+        if(subDir == "/note"):
+            subject = parameters["subject"]
+            print(subject)
+            note = notes.GetNote(user.uuid,subject)
+            if (note is None): raise SiteNotFound("This note was not found!")
+            return json.dumps(note.__dict__,cls=UUIDEncoder)
+        
+        
 
     def handle(self):
         try:
@@ -46,6 +62,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             user = self.Authenticate(headers)
             if (subDir.lower() not in self.PAGES): raise SiteNotFound(f"{subDir} is not a valid sub directory path")
 
+            json_data = self.HandleClientRequest(user,method,baseurl,subDir,parameters)
+            
 
             headers = {
                 "Content-Type": "application/json",
@@ -124,6 +142,16 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         if (self.DEBUG): print(f"\nREQUEST: {self.client_address} -> {headerLines[0]}\nHEADERS:\n{headers}")
 
         return headers
+
+    def ParseParameters(self, requestUrl:str) -> dict[str,str]:
+        parameters = {}
+        for param in "".join((requestUrl.split('?')[1:])).split('&'):
+            if ('=' not in param): continue
+            key, value = param.split('=')
+            parameters[key.lower().strip()] = value.strip()
+
+        return parameters
+
 
 def RunServer(port):
     global Server
