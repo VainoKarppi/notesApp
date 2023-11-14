@@ -41,6 +41,9 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             parameters = self.ParseParameters(path)
 
             if (method.lower() != "get"): raise NotImplementedError(f"{method} not implemented yet!")
+
+
+            user = self.Authenticate(headers)
             if (subDir.lower() not in self.PAGES): raise SiteNotFound(f"{subDir} is not a valid sub directory path")
 
 
@@ -74,6 +77,18 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             self.request.sendall(http_response)
         
         print("REQUEST END")
+
+    def Authenticate(self, headers) -> accounts.Account:
+        try:
+            if ("Authorization" not in headers): raise NotAuthenticatedException("No Access")
+            auth_data = headers["Authorization"][6:] # "Basic bXl1c2VybmFtZTpteXBhc3N3b3Jk" --> "bXl1c2VybmFtZTpteXBhc3N3b3Jk"
+            username, password = base64.b64decode(auth_data).decode('utf-8').split(':')
+            user = accounts.Login(username,password)
+            return user
+        except:
+            raise NotAuthenticatedException(headers)
+
+
     def BuildResponse(self, status: HTTPStatus, headers:dict[str,str] = None, body:str = None) -> bytes:
         response = f"HTTP/1.1 {status._value_} {status.phrase}\r\n"
 
