@@ -88,10 +88,25 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             http_response = build_http_response(HTTPStatus.OK, headers, json_data)
             self.request.sendall(http_response)
         except Exception as e:
+            headers = {
+                "Content-Type": "application/json",
+                "Server": "NotesApp API",
+                "WWW-Authenticate": "Basic",
+            }
+
+            if isinstance(e, NotAuthenticatedException):
+                http_response = self.BuildResponse(HTTPStatus.UNAUTHORIZED, headers,str(e))
+            elif isinstance(e, SiteNotFound):
+                http_response = self.BuildResponse(HTTPStatus.NOT_FOUND, headers,str(e))
+            elif isinstance(e, NotImplementedError):
+                http_response = self.BuildResponse(HTTPStatus.NOT_IMPLEMENTED, headers,str(e))
+            else:
+                http_response = self.BuildResponse(HTTPStatus.INTERNAL_SERVER_ERROR, headers,str(e))
+
+
             print(e)
-            http_response = build_http_response(HTTPStatus.INTERNAL_SERVER_ERROR, None, str(e))
             self.request.sendall(http_response)
-            
+        
         print("REQUEST END")
         print("REQUEST END 2")
 
@@ -107,4 +122,9 @@ def StartServer(port):
 
 def StopServer():
     Server.shutdown()
-    Server.close_request()
+
+class NotAuthenticatedException(Exception):
+    pass
+
+class SiteNotFound(Exception):
+    pass
