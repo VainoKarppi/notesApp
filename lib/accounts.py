@@ -86,6 +86,8 @@ def CreateAccount(name:str, password:str, email:str, admin:bool = False) -> Acco
     account = Account(name,password,email)
     account.admin = admin
 
+    if(account is not None): db.InsertAccount(account)
+
     return account
 
 def GetAllAccounts() -> list:

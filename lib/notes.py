@@ -30,6 +30,8 @@ def CreateNote(user: accounts.Account, subject: str, text: str) -> Note:
     if(db.GetNote(user.uuid,subject) is not None): raise ValueError("Subject name already in use!")
 
     newNote = Note(user.uuid,subject,text)
+    if(newNote is not None): db.InsertNote(newNote)
+    
     return newNote
 
 
@@ -49,5 +51,12 @@ def GetNote(ownerUUID: uuid.UUID, subject: str) -> Note:
     note = GetNoteFromDBResult(noteData)
     return note
 
+def GetAllUserNotes(ownerUUID: uuid.UUID) -> list[Note]:
+    result = []
+    notes = db.LoadAllUserNotes(ownerUUID)
+    for note in notes:
+        note = GetNoteFromDBResult(note)
+        if (note is None): continue
+        result.append(note)
 
-
+    return result

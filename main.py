@@ -87,7 +87,6 @@ try:
         if (db.EmailInUse("admin@mail.com") == False):
             print("Creating Admin account: (username: admin | password: admin)")
             admin = accounts.CreateAccount("admin","admin","admin@mail.com",True)
-            db.InsertAccount(admin)
 
 
         print("Type 'help' to view commands!")
@@ -122,8 +121,6 @@ try:
 
                         newAccount = accounts.CreateAccount(username,password,email,False)
                         if (newAccount is None): raise Exception("Account creation failed!")
-
-                        db.InsertAccount(newAccount)
                         print("Account created succesfully!")
 
 
@@ -216,7 +213,6 @@ try:
                             print(f"Creating account... ({username}) - ({email}) - Admin:{isAdmin}\n")
                             newAccount = accounts.CreateAccount(username,password,email,isAdmin)
                             if (newAccount is None): raise Exception("Account creation failed!")
-                            db.InsertAccount(newAccount)
                             print("Account created succesfully!")
 
                         if (command == "showaccounts"):
@@ -245,12 +241,11 @@ try:
                     if (command == "help"): CommandsHelp()
                         
                     if (command == "shownotes"):
-                        allNotes = db.LoadAllUserNotes(LoggedUser.uuid)
+                        allNotes = notes.GetAllUserNotes(LoggedUser.uuid)
                         if (len(allNotes) == 0): print("No notes found for current user!")
                         index = 0
-                        for noteData in allNotes:
+                        for note in allNotes:
                             index = index + 1
-                            note = notes.GetNoteFromDBResult(noteData)
                             if (note is not None):
                                 print(f"NOTE: ({index})")
                                 print(note)
@@ -260,7 +255,7 @@ try:
                         subject = input("\nEnter subject name:\n> ")
                         text = input("\nEnter text:\n> ")
                         note = notes.CreateNote(LoggedUser,subject,text)
-                        db.InsertNote(note)
+                        if (note is None): raise Exception("Note creation failed!")
                         print("Note added succesfully!")
 
                     if (command == "removenote"):
@@ -310,11 +305,7 @@ try:
 
                         #TODO add hours and minutes support
                         elif (searchMode == "2"):
-                            allNotes = []
-                            foundNotes = db.LoadAllUserNotes(LoggedUser.uuid)
-                            for noteData in foundNotes:
-                                note = notes.GetNoteFromDBResult(noteData)
-                                if (note is not None): allNotes.append(note)
+                            allNotes = notes.GetAllUserNotes(LoggedUser.uuid)
                                 
                             startDateText = input("\nEnter start date for filter in UTC (dd/mm/yyyy):\n> ")
                             startDate = datetime(int(startDateText.split('/')[2]), int(startDateText.split('/')[1]), int(startDateText.split('/')[0]))
