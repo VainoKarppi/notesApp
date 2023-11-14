@@ -119,26 +119,30 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
     
 
     def GetHeaders(self):
-        data = self.request.recv(1024).decode('utf-8')
-        headers = {}
-        headerLines = data.split('\n')
+        while True:
+            data = self.request.recv(1024)
+            if (not data): break
 
-        headers["Method"] = headerLines[0].split(' ')[0].strip()
+            data = data.decode('utf-8')
+            headers = {}
+            headerLines = data.split('\n')
 
-        for line in headerLines:
-            if (':' not in line): continue
-            key, value = line.split(': ')
-            headers[key] = value
-        
-        if ("Referer" not in headers):
-            headerRequest = headerLines[0].split(' ')
-            baseAddress = f"{self.server.server_address[0]}:{self.server.server_address[1]}"
-            if ("Host" in headers): baseAddress = f"{headers['Host']}"
-            headers["Referer"] = (f"http://{baseAddress.strip()}{headerRequest[1].strip()}").strip()
-        
-        if (self.DEBUG): print(f"\nREQUEST: {self.client_address} -> {headerLines[0]}\nHEADERS:\n{headers}")
+            headers["Method"] = headerLines[0].split(' ')[0].strip()
 
-        return headers
+            for line in headerLines:
+                if (':' not in line): continue
+                key, value = line.split(': ')
+                headers[key] = value
+            
+            if ("Referer" not in headers):
+                headerRequest = headerLines[0].split(' ')
+                baseAddress = f"{self.server.server_address[0]}:{self.server.server_address[1]}"
+                if ("Host" in headers): baseAddress = f"{headers['Host']}"
+                headers["Referer"] = (f"http://{baseAddress.strip()}{headerRequest[1].strip()}").strip()
+            
+            if (self.DEBUG): print(f"\nREQUEST: {self.client_address} -> {headerLines[0]}\nHEADERS:\n{headers}")
+
+            return headers
 
     def ParseParameters(self, requestUrl:str) -> dict[str,str]:
         parameters = {}
@@ -152,8 +156,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 def RunServer(ip,port):
     global Server
-    Server = socketserver.TCPServer(("127.0.0.1", port), MyRequestHandler)
-    Server.serve_forever()
+    with socketserver.ThreadingTCPServer((ip, port), MyRequestHandler) as Server:
+        Server.serve_forever()
 
 def StartServer(ip,port):
     thread = threading.Thread(target=RunServer, args=(ip,port,))
