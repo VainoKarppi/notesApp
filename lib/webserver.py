@@ -39,17 +39,15 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         
         if(subDir == "/note"):
             subject = parameters["subject"]
-            print(subject)
             note = notes.GetNote(user.uuid,subject)
             if (note is None): raise SiteNotFound("This note was not found!")
             return json.dumps(note.__dict__,cls=UUIDEncoder)
-        
         
 
     def handle(self):
         try:
             headers = self.GetHeaders()
-
+            
             method = headers['Method']
             path = headers["Referer"]
             baseurl = "/".join((path.split('/')[0:3])).strip()
@@ -71,7 +69,6 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 "WWW-Authenticate": "Basic",
             }
     
-            print(f"LOGIN SUCCESS: {user.name}")
             http_response = self.BuildResponse(HTTPStatus.OK, headers, json_data)
             self.request.sendall(http_response)
         except Exception as e:
@@ -153,15 +150,15 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         return parameters
 
 
-def RunServer(port):
+def RunServer(ip,port):
     global Server
     Server = socketserver.TCPServer(("127.0.0.1", port), MyRequestHandler)
     Server.serve_forever()
 
-def StartServer(port):
-    thread = threading.Thread(target=RunServer, args=(port,))
+def StartServer(ip,port):
+    thread = threading.Thread(target=RunServer, args=(ip,port,))
     thread.start()
-    print (f"WEB Server started at port {port}")
+    print (f"WEB Server started at {ip}:{port}")
 
 def StopServer():
     Server.server_close()

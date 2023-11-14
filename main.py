@@ -81,7 +81,7 @@ try:
         #db.Conn.execute("DROP TABLE IF EXISTS notes")
         
         db.Init()
-        webserver.StartServer(8000)
+        webserver.StartServer("127.0.0.1",8000)
 
         
         if (db.EmailInUse("admin@mail.com") == False):
