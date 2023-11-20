@@ -347,11 +347,16 @@ try:
                         print("\n" + e)
 
 
-# CTRL + C was pressed (KeyboardInterrupt)
-except:
+# CTRL + C was pressed (KeyboardInter
+# rupt)
+except Exception as e:
+    print("\n" + str(e) + "\n")
     if (DEBUG):
-        import traceback
-        print("\n")
         traceback.print_exc()
+    
+    Exit(1)
 
+except KeyboardInterrupt as e:
+    Exit(0)
+    
 Exit(0)
