@@ -33,7 +33,7 @@ def CommandsHelp():
         print(f"RemoveAccount - (Remove Account)")
         if LoggedUser is not None and LoggedUser.admin:
             print(f"\n[ ADMIN COMMANDS ]")
-            print(f"AddAccount - (Create Account)")
+            print(f"CreateAccount - (Create Account)")
             print(f"ShowAccounts - (Show All Accounts)")
             print(f"RemoveOtherAccount - (Remove Someone Else's Account)")
 
@@ -176,18 +176,9 @@ try:
                         if (LoggedUser is None):
                             print("Not logged in!")
                         else:
-                            oldPasswordHash = LoggedUser.password
                             newPassword = input("\nEnter NEW password:\n> ")
-                            newPasswordHash = accounts.ComputeSHA3hash(newPassword,LoggedUser.salt)
-                            if (newPasswordHash == oldPasswordHash): raise ValueError("New Password cannot be same as old password!")
-                            if (len(newPassword) < 5): raise ValueError("New Password must be at least 5 characters")
+                            accounts.UpdatePassword(LoggedUser,newPassword)
 
-                            LoggedUser.password = newPasswordHash
-                            try:
-                                db.UpdateAccount(LoggedUser)
-                                print("Password updated succesfully!")
-                            except:
-                                LoggedUser.password = oldPasswordHash # Restore old password if update was failed
 
                     # Remove this account
                     if (command == "removeaccount"):
@@ -202,7 +193,7 @@ try:
 
                     #* ADMIN COMMANDS
                     if (LoggedUser.admin):
-                        if (command == "addaccount"): 
+                        if (command == "createaccount"): 
                             username = input("\nEnter username:\n> ")
                             if (len(username) < 5): raise ValueError("Username must be at least 5 characters")
                             password = input("\nEnter password:\n> ")

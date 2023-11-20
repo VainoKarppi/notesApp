@@ -75,11 +75,11 @@ def InsertAccount(account):
     if (result.rowcount == 0): raise Exception("Failed to insert account!")
     Conn.commit()
 
-def UpdateAccount(account):
+def UpdateAccount(account) -> sqlite3.Cursor:
     result = Cursor.execute("UPDATE accounts SET name=:name, email=:email, password=:password, hidden=:hidden WHERE uuid=:uuid",
         {"name":account.name,"email":account.email,"password":account.password,"hidden":account.hidden,"uuid":account.uuid})
-    if (result.rowcount == 0): raise Exception("Failed to update account!")
-    Conn.commit()
+    if (result.rowcount != 0): Conn.commit()
+    return result
     
 
 def RemoveAccount(accountUUID:uuid.UUID):

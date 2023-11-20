@@ -101,6 +101,26 @@ def GetAllAccounts() -> list:
 
     return accounts
 
+def UpdateAccount(account: Account) -> None:
+    result = db.UpdateAccount(account)
+    if (result.rowcount == 0): raise Exception("Failed to update account!")
+
+
+def UpdatePassword(account: Account, newPassword: str) -> None:
+    oldPasswordHash = account.password
+
+    newPasswordHash = ComputeSHA3hash(newPassword,account.salt)
+    if (newPasswordHash == oldPasswordHash): raise ValueError("New Password cannot be same as old password!")
+    if (len(newPassword) < 5): raise ValueError("New Password must be at least 5 characters")
+
+    try:
+        account.password = newPasswordHash
+        UpdateAccount(account)
+    except:
+        account.password = oldPasswordHash # Restore old password if update was failed
+        pass
+
+
 def RemoveAllAccounts() -> None:
     db.Cursor.execute("TRUNCATE TABLE accounts")
 
