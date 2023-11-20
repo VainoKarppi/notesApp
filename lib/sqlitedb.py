@@ -123,8 +123,8 @@ def UpdateNote(note) -> sqlite3.Cursor:
     if (result.rowcount != 0): Conn.commit()
     return result
 
-def RemoveNote(ownerUUID:uuid.UUID, subject: str) -> sqlite3.Cursor: # DONT USE! (Use update with hidden=true)
-    result = Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[ownerUUID, subject])
+def RemoveNote(ownerUUID:uuid.UUID, subject: str) -> sqlite3.Cursor: # SHOULD NOT BE USED! (Use update with hidden=true)
+    result = Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ? COLLATE NOCASE",[ownerUUID, subject])
     if (result.rowcount != 0): Conn.commit()
     return result
 
