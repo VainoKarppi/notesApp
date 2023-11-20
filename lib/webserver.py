@@ -53,7 +53,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 
             user = self.Authenticate(headers)
-            if (subDir.lower() not in self.PAGES): raise SiteNotFound(f"{subDir} is not a valid sub directory path")
+            if (subDir.lower() not in PAGES): raise SiteNotFound(f"{subDir} is not a valid sub directory path")
 
             json_data = self.HandleClientRequest(user,method,baseurl,subDir,parameters)
             
@@ -140,7 +140,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         for param in "".join((requestUrl.split('?')[1:])).split('&'):
             if ('=' not in param): continue
             key, value = param.split('=')
-            parameters[key.lower().strip()] = value.strip()
+            value = value.strip().replace("+"," ").strip()
+            parameters[key.lower().strip()] = value
 
         return parameters
 

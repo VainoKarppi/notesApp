@@ -9,7 +9,7 @@ Invoke-WebRequest -Uri $url -Headers $headers
 
 # CREATE TEST NOTE FIRST WITH SUBJECT: test
 $body = @{
-    "subject"="test"
+    "subject"="test note 1"
 }
 Invoke-WebRequest -Uri "http://localhost:8000/note" -Method Get -Headers $headers -Body $body
 
