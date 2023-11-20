@@ -319,7 +319,8 @@ try:
                     
                     if (command == "importnote"):
                         path = input("\nEnter path of the file:\n> ")
-                        notes.ImportNote(LoggedUser.uuid,path)
+                        notes.ImportNoteFile(LoggedUser.uuid,path)
+                        print("Note imported succesfully!")
 
                     if (command == "exit"):
                         os.system('cls' if os.name == 'nt' else 'clear')

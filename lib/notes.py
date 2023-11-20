@@ -89,10 +89,20 @@ def FindNotes(ownerUUID: uuid.UUID, what: str, type: str) -> list[Note]:
 
     return notes
 
-def ImportNote(ownerUUID: uuid.UUID, filePath: str) -> Note:
-    text = open(filePath).read()
-    # TODO what if the the data is array of notes
-    data = json.loads(text)
+def ImportNoteFile(ownerUUID: uuid.UUID, filePath: str) -> Note | list[Note]:
+    jsonData = json.loads(open(filePath).read())
+
+    # DICT = Single Note
+    if(isinstance(jsonData,dict)):
+        return CreateNote(ownerUUID, jsonData['subject'], jsonData['text'], jsonData['webPage'])
     
-    note = CreateNote(ownerUUID, data['subject'], data['text'])
-    return note
+    if (isinstance(jsonData,list) == False): raise ValueError("Invalid file!")
+
+    # LIST = Multiple Notes
+    notes = []
+    for noteData in jsonData:
+        note = CreateNote(ownerUUID, noteData['subject'], noteData['text'], noteData['webPage'])
+        notes.append(note)
+    return notes
+
+    

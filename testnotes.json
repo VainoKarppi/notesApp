@@ -1,0 +1,14 @@
+[
+    {
+        "subject":"test note #1",
+        "date":"",
+        "text":"This is a test text",
+        "webPage":"http://www.xamk.fi"
+    },
+    {
+        "subject":"test note #2",
+        "date":"",
+        "text":"This is a test text",
+        "webPage":"http://www.xamk.fi"
+    }
+]
