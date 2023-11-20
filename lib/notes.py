@@ -13,7 +13,7 @@ from uuid import UUID
 #! NOTES FUNCTIONS
 #! ----------------------
 class Note:
-    def __init__(self, ownerUUID: uuid.UUID, subject: str, text: str, webPage: str = ""):
+    def __init__(self, ownerUUID: uuid.UUID, subject: str, text: str = "", webPage: str = ""):
         self.ownerUUID = ownerUUID
         self.subject = subject
         self.text = text
@@ -25,13 +25,14 @@ class Note:
         return(f"\townerUUID: {self.ownerUUID}\n\tsubject: {self.subject}\n\ttext: {self.text}\n\twebPage: {self.webPage}\n\tcreationTimeUTC: {self.creationTimeUTC}\n")
 
 
-def CreateNote(userData: accounts.Account | uuid.UUID, subject: str, text: str) -> Note:
+def CreateNote(userData: accounts.Account | uuid.UUID, subject: str, text: str = "", webPage: str = "") -> Note:
     uid = userData if isinstance(userData, uuid.UUID) else userData.uuid
 
     if (len(subject) == 0): raise ValueError("Subject cannot be empty!")
     if(db.GetNote(uid,subject) is not None): raise ValueError("Subject name already in use!")
 
     newNote = Note(uid,subject,text)
+    newNote.webPage = webPage
     if(newNote is not None): db.InsertNote(newNote)
     
     return newNote

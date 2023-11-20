@@ -247,7 +247,8 @@ try:
                     if (command == "addnote"):
                         subject = input("\nEnter subject name:\n> ")
                         text = input("\nEnter text:\n> ")
-                        note = notes.CreateNote(LoggedUser,subject,text)
+                        www = input("\nEnter www path:\n> ")
+                        note = notes.CreateNote(LoggedUser,subject,text,www)
                         if (note is None): raise Exception("Note creation failed!")
                         print("Note added succesfully!")
 
