@@ -1,14 +1,9 @@
 import base64
 import json
+import sys
 import uuid
-import http.server
-import os
-import secrets
 import socketserver
-import string
-from typing import Any, Tuple
 from http import HTTPStatus
-from http.server import BaseHTTPRequestHandler
 from datetime import datetime
 import threading
 import lib.sqlitedb as db
@@ -23,11 +18,11 @@ class UUIDEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+DEBUG = ('debug' in map(str.lower, sys.argv))
+
+PAGES = ["/","/notes","/note"]
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
-    DEBUG = False
-    PAGES = ["/","/notes","/note"]
-
     def HandleClientRequest(self,user:accounts.Account, method:str, baseurl:str, subDir:str, parameters: dict[str,str]):
         # TODO Spawn in a new thread
         method = method.lower()
@@ -79,7 +74,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             }
 
             if isinstance(e, NotAuthenticatedException):
-                http_response = self.BuildResponse(HTTPStatus.UNAUTHORIZED, headers,str(e))
+                http_response = self.BuildResponse(HTTPStatus.UNAUTHORIZED, headers)
             elif isinstance(e, SiteNotFound):
                 http_response = self.BuildResponse(HTTPStatus.NOT_FOUND, headers,str(e))
             elif isinstance(e, NotImplementedError):
@@ -109,7 +104,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         if (body is None): body = status.phrase
         response += "\r\n" + body
 
-        if (self.DEBUG): print(f"\nRESPONSE: ({self.client_address}) --> STATUS:{status._value_} -> HEADERS:{headers} -> BODY:{body}")
+        if (DEBUG): print(f"\nRESPONSE: ({self.client_address}) --> STATUS:{status._value_} -> HEADERS:{headers} -> BODY:{body}")
 
         return response.encode('utf-8')
     
@@ -136,7 +131,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 if ("Host" in headers): baseAddress = f"{headers['Host']}"
                 headers["Referer"] = (f"http://{baseAddress.strip()}{headerRequest[1].strip()}").strip()
             
-            if (self.DEBUG): print(f"\nREQUEST: {self.client_address} -> {headerLines[0]}\nHEADERS:\n{headers}")
+            if (DEBUG): print(f"\nREQUEST: {self.client_address} -> {headerLines[0]}\nHEADERS:\n{headers}")
 
             return headers
 

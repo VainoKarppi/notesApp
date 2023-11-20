@@ -1,13 +1,13 @@
 
 from datetime import datetime
 import os
+import sys
 
 import lib.notes as notes
 import lib.accounts as accounts
 import lib.sqlitedb as db
 import lib.webserver as webserver
 
-Debug = False
 
 
 LoggedUser:accounts.Account = None
@@ -43,10 +43,10 @@ def CommandsHelp():
         print(f"RemoveNote - (Removes a note)")
         print(f"EditNote - (Edit Existing Note)")
         print(f"ImportNote - (Import a note from a file)")
-        print(f"ShowNotes - (Show All Available Notes)")
+        print(f"ShowNotes - (Show All User Notes)")
         print(f"RemoveAllNotes - (Removes all notes from user)")
         print(f"ReadNote - (View a Specific Note)")
-        print(f"SearchNote - (Search for a Note)")
+        print(f"SearchNote - (Search for a Note(s))")
         print(f"Exit - (Return to Account Mode)")
     
     print("===============================================\n")
@@ -77,6 +77,9 @@ def Exit(code:int = 0):
 try:
     if __name__=='__main__':
         os.system('cls' if os.name == 'nt' else 'clear')
+
+        DEBUG = ('debug' in map(str.lower, sys.argv))
+        if (DEBUG): print("DEBUG MODE ENABLED!\n")
         
         #db.Conn.execute("DROP TABLE IF EXISTS accounts")
         #db.Conn.execute("DROP TABLE IF EXISTS notes")
@@ -328,22 +331,22 @@ try:
 
 
             except Exception as e:
-                    if (Debug):
+                    if (DEBUG):
                         import traceback
+                        print("\n")
                         traceback.print_exc()
 
                     if hasattr(e, 'message'):
-                        print(e.message)
+                        print("\n" + e.message)
                     else:
-                        print(e)
+                        print("\n" + e)
 
 
 # CTRL + C was pressed (KeyboardInterrupt)
 except:
-    if (Debug):
+    if (DEBUG):
         import traceback
+        print("\n")
         traceback.print_exc()
-
-    Exit(0)
 
 Exit(0)
