@@ -93,6 +93,11 @@ try:
             print("Creating Admin account: (username: admin | password: admin)")
             admin = accounts.CreateAccount("admin","admin","admin@mail.com",True)
 
+            # Import TEST notes for admin
+            if (os.path.isfile("testnotes.json")):
+                notes.ImportNoteFile(admin.uuid,"testnotes.json")
+                print("Imported Admin test notes!...\n")
+
 
         print("Type 'help' to view commands!")
         
