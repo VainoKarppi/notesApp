@@ -119,7 +119,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             data = self.request.recv(1024)
             if (not data): break
 
-            data = data.decode('utf-8')
+            data = data.strip().decode('utf-8')
             headers = {}
             headerLines = data.split('\n')
 
