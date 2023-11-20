@@ -60,3 +60,28 @@ def GetAllUserNotes(ownerUUID: uuid.UUID) -> list[Note]:
         result.append(note)
 
     return result
+
+
+def RemoveNote(ownerUUID: uuid.UUID, subject: str) -> None:
+    result = db.RemoveNote(ownerUUID,subject)
+    if (result.rowcount == 0): raise Exception("No note found to be removed!")
+
+
+def UpdateNote(note: Note) -> None:
+    result = db.UpdateNote(note)
+    if (result.rowcount == 0): raise Exception("Failed to update note!")
+
+def RemoveAllUserNotes(ownerUUID: uuid.UUID) -> int:
+    """Returns the number of notes removed"""
+    result = db.RemoveAllUserNotes(ownerUUID)
+    return result.rowcount
+
+
+def FindNotes(ownerUUID: uuid.UUID, what: str, type: str) -> list[Note]:
+    notesData = db.FindNote(ownerUUID,what,type)
+    notes = []
+    for rawNote in notesData:
+        note = GetNoteFromDBResult(rawNote)
+        if (note is not None): notes.append(note)
+
+    return notes

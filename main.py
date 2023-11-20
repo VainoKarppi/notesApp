@@ -260,7 +260,7 @@ try:
 
                     if (command == "removenote"):
                         subject = input("\nEnter subject name of the note you want to delete:\n> ")
-                        db.RemoveNote(LoggedUser.uuid,subject)
+                        notes.RemoveNote(LoggedUser.uuid,subject)
                         print("Note removed succesfully!")
                     
                     if(command == "removeallnotes"):
@@ -274,7 +274,7 @@ try:
                         else:
                             print(f"Removing all notes from user: {data}")
 
-                        db.RemoveAllUserNotes(user.uuid)
+                        notes.RemoveAllUserNotes(user.uuid)
 
                     if (command == "editnote"):
                         subject = input("\nEnter subject name to edit:\n> ")
@@ -282,7 +282,7 @@ try:
                         if (note is None): raise ValueError("No note was found with this subject name!")
                         
                         note.text = input("\nEnter new text for the note\n> ")
-                        db.UpdateNote(note)
+                        notes.UpdateNote(note)
 
                         print("Note Updated Succesfully")
 
@@ -297,11 +297,9 @@ try:
                         searchMode = input("\nEnter number what to search with:\n\t1) Subject\n\t2) Date\n\t3) Text\n> ")
                         if (searchMode == "1"):
                             subjectFilter = input("\nEnter subject filter:\n> ")
-                            foundNotes = db.FindNote(LoggedUser.uuid,subjectFilter,"subject")
+                            foundNotes = notes.FindNotes(LoggedUser.uuid,subjectFilter,"subject")
                             print(f"Found {len(foundNotes)} note(s) with this subject filter!")
-                            for noteData in foundNotes:
-                                note = notes.GetNoteFromDBResult(noteData)
-                                if (note is not None): print(note)
+                            for note in foundNotes: print(note)
 
                         #TODO add hours and minutes support
                         elif (searchMode == "2"):
@@ -321,11 +319,9 @@ try:
 
                         elif (searchMode == "3"):
                             textFilter = input("\nEnter text filter:\n> ")
-                            foundNotes = db.FindNote(LoggedUser.uuid,textFilter,"text")
+                            foundNotes = notes.FindNotes(LoggedUser.uuid,textFilter,"text")
                             print(f"Found {len(foundNotes)} note(s) with this text filter!")
-                            for noteData in foundNotes:
-                                note = notes.GetNoteFromDBResult(noteData)
-                                if (note is not None): print(note)
+                            for note in foundNotes: print(note)
 
                     if (command == "exit"):
                         os.system('cls' if os.name == 'nt' else 'clear')

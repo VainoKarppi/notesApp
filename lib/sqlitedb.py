@@ -117,16 +117,16 @@ def InsertNote(note):
     if (result.rowcount == 0): raise Exception("Failed to insert note!")
     Conn.commit()
 
-def UpdateNote(note):
+def UpdateNote(note) -> sqlite3.Cursor:
     result = Cursor.execute("UPDATE notes SET text=:text, hidden=:hidden WHERE owner=:owner AND subject=:subject COLLATE NOCASE",
         {"text":note.text,"hidden":note.hidden,"owner":note.ownerUUID,"subject":note.subject})
-    if (result.rowcount == 0): raise Exception("Failed to update note!")
-    Conn.commit()
+    if (result.rowcount != 0): Conn.commit()
+    return result
 
-def RemoveNote(ownerUUID:uuid.UUID, subject: str): # DONT USE! (Use update with hidden=true)
+def RemoveNote(ownerUUID:uuid.UUID, subject: str) -> sqlite3.Cursor: # DONT USE! (Use update with hidden=true)
     result = Cursor.execute("DELETE FROM notes WHERE owner = ? AND subject = ?",[ownerUUID, subject])
-    if (result.rowcount == 0): raise Exception("No note found to be removed!")
-    Conn.commit()
+    if (result.rowcount != 0): Conn.commit()
+    return result
 
 def GetNote(ownerUUID:uuid.UUID, subject: str):
     result = Cursor.execute("SELECT * FROM notes WHERE owner = ? AND subject = ? COLLATE NOCASE",[ownerUUID, subject]).fetchone()
@@ -140,10 +140,12 @@ def LoadAllNotes():
     result = Cursor.execute("SELECT * FROM notes")
     return result
 
-def RemoveAllUserNotes(ownerUUID: uuid.UUID) -> None:
-    Cursor.execute("DELETE FROM notes WHERE owner = ?",[ownerUUID])
-    Conn.commit()
+def RemoveAllUserNotes(ownerUUID: uuid.UUID) -> sqlite3.Cursor:
+    result = Cursor.execute("DELETE FROM notes WHERE owner = ?",[ownerUUID])
+    if (result.rowcount != 0): Conn.commit()
+    return result
 
-def FindNote(ownerUUID: uuid.UUID, what: str, type:str):
-    data = Cursor.execute("SELECT * FROM notes WHERE owner = ? AND "+type+" LIKE ?",[ownerUUID,('%' + what + '%')]).fetchall()
+def FindNote(ownerUUID: uuid.UUID, what: str, type:str) -> list:
+    #TODO Serialize type to safe
+    data = Cursor.execute("SELECT * FROM notes WHERE owner = ? AND " + type + " LIKE ?",[ownerUUID,('%' + what + '%')]).fetchall()
     return data
