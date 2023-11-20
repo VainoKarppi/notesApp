@@ -7,7 +7,7 @@ import lib.accounts as accounts
 import lib.sqlitedb as db
 import lib.webserver as webserver
 
-Debug = True
+Debug = False
 
 
 LoggedUser:accounts.Account = None
