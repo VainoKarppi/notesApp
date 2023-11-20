@@ -57,14 +57,11 @@ def RemoveAccount(uuidOrEmail:str) -> None:
     db.Conn.commit()
 
 
-def GetAccount(uuidOrEmail:str) -> Account:
+def GetAccount(uuidOrEmail: uuid.UUID | str) -> Account:
+
     userUuid:uuid.UUID = None
-    if ('@' not in uuidOrEmail):
-        if (isinstance(uuidOrEmail, uuid.UUID)):
-            userUuid = uuidOrEmail
-        else:
-            userUuid = uuid.UUID(uuidOrEmail)
-        
+    if (isinstance(uuidOrEmail, uuid.UUID)): userUuid = uuidOrEmail
+    
     result = db.Cursor.execute("SELECT * FROM accounts WHERE uuid=:uuid COLLATE NOCASE OR email=:email COLLATE NOCASE", {"uuid":userUuid, "email":uuidOrEmail}).fetchone()
     if (result is None): return None
     
@@ -73,6 +70,7 @@ def GetAccount(uuidOrEmail:str) -> Account:
     account.creationTimeUTC = datetime.strptime(result[6],'%Y-%m-%d %H:%M:%S.%f')
 
     return account
+
 
 
 # Returns create Account class

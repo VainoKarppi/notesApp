@@ -25,11 +25,13 @@ class Note:
         return(f"\townerUUID: {self.ownerUUID}\n\tsubject: {self.subject}\n\ttext: {self.text}\n\twebPage: {self.webPage}\n\tcreationTimeUTC: {self.creationTimeUTC}\n")
 
 
-def CreateNote(user: accounts.Account, subject: str, text: str) -> Note:
-    if (len(subject) == 0): raise ValueError("Subject cannot be empty!")
-    if(db.GetNote(user.uuid,subject) is not None): raise ValueError("Subject name already in use!")
+def CreateNote(userData: accounts.Account | uuid.UUID, subject: str, text: str) -> Note:
+    uid = userData if isinstance(userData, uuid.UUID) else userData.uuid
 
-    newNote = Note(user.uuid,subject,text)
+    if (len(subject) == 0): raise ValueError("Subject cannot be empty!")
+    if(db.GetNote(uid,subject) is not None): raise ValueError("Subject name already in use!")
+
+    newNote = Note(uid,subject,text)
     if(newNote is not None): db.InsertNote(newNote)
     
     return newNote
@@ -85,3 +87,11 @@ def FindNotes(ownerUUID: uuid.UUID, what: str, type: str) -> list[Note]:
         if (note is not None): notes.append(note)
 
     return notes
+
+def ImportNote(ownerUUID: uuid.UUID, filePath: str) -> Note:
+    text = open(filePath).read()
+    # TODO what if the the data is array of notes
+    data = json.loads(text)
+    
+    note = CreateNote(ownerUUID, data['subject'], data['text'])
+    return note

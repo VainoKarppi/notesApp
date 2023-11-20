@@ -42,6 +42,7 @@ def CommandsHelp():
         print(f"AddNote - (Create new note)")
         print(f"RemoveNote - (Removes a note)")
         print(f"EditNote - (Edit Existing Note)")
+        print(f"ImportNote - (Import a note from a file)")
         print(f"ShowNotes - (Show All Available Notes)")
         print(f"RemoveAllNotes - (Removes all notes from user)")
         print(f"ReadNote - (View a Specific Note)")
@@ -82,6 +83,7 @@ try:
         
         db.Init()
         webserver.StartServer("127.0.0.1",8000)
+        print("You can also access the notes using your browser at:\n\t- http://127.0.0.1:8000/notes\n\t- http://127.0.0.1:8000/note?subject=NOTESUBJECTHERE\n")
 
         
         if (db.EmailInUse("admin@mail.com") == False):
@@ -313,6 +315,10 @@ try:
                             foundNotes = notes.FindNotes(LoggedUser.uuid,textFilter,"text")
                             print(f"Found {len(foundNotes)} note(s) with this text filter!")
                             for note in foundNotes: print(note)
+                    
+                    if (command == "importnote"):
+                        path = input("\nEnter path of the file:\n> ")
+                        notes.ImportNote(LoggedUser.uuid,path)
 
                     if (command == "exit"):
                         os.system('cls' if os.name == 'nt' else 'clear')
